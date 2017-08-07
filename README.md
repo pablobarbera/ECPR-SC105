@@ -30,13 +30,15 @@ You can also subscribe to the repository if you have [a GitHub account](https://
 
 The course will begin with a discussion of the concept of "Big Data" and the research opportunities and challenges of the use of massive-scale datasets in the social sciences. The first session will also provide a foundation of R coding skills upon which we will rely during the rest of the course. Here, we will go over existing packages to efficiently analyze large-scale datasets in R, how to parallelize for loops, and how to read and write large files.
 
-[Slides: Big Data in the social sciences (.pdf)](day1/big-data.pdf)
+[Slides: Big Data in the social sciences (.pdf)](day1/slides-big-data.pdf)
 
-[Code: Efficient programming with R (.html)](day1/01-efficient-programming.html)
+[Slides: Efficient data analysis with R (.pdf)](day1/slides-parallel.pdf)
+
+[Code: Efficient programming with R (.html)](html/01-efficient-programming.html)
 
 [Challenge 1: Writing more efficient code](day1/challenge1.Rmd)
 
-[Code: Parallel computing with R (.html)](day1/02-parallel-computing.html)
+[Code: Parallel computing with R (.html)](html/02-parallel-computing.html)
 
 [Challenge 2: Parallel computing](day1/challenge2.Rmd)
 
