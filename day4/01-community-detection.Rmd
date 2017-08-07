@@ -1,0 +1,8 @@
+---
+title: "Community detection"
+author: Pablo Barbera
+date: August 10, 2017
+output: html_document
+---
+
+## Community detection

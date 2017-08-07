@@ -1,0 +1,211 @@
+---
+title: "Efficient programming with R"
+author: "Pablo Barbera"
+date: "August 7, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+### Vectorization of R code
+
+Let's create the following two vectors with random values sampled from a uniform distribution:
+
+```{r}
+set.seed(777)
+n <- 1000000
+x <- runif(n)
+y <- runif(n)
+```
+
+Which of the following chunks of code will run faster?
+
+```{r}
+loop <- function(){
+  z <- rep(NA, n)
+  for (i in 1:n){
+    z[i] <- x[i] + y[1]
+  }
+  return(z)
+}
+```
+
+```{r}
+sapply_code <- function(){
+  z <- sapply(1:n, function(i) x[i] + y[i])
+  return(z)
+}
+```
+
+```{r}
+vectorized <- function(){
+  z <- x + y
+  return(z)
+}
+
+```
+
+
+```{r}
+system.time(loop())
+system.time(sapply_code())
+system.time(vectorized())
+```
+
+
+Other examples where vectorized functions can dramatically speed up our code. The first example shows the power of `ifelse` and the `[` (replacement) function.
+
+```{r}
+set.seed(123)
+n <- 10000000
+ideology <- sample(1:10, n, replace=TRUE)
+
+# vectorized code
+group_ideology <- function(){
+  groups <- rep(NA, n)
+  groups[ideology>5] <- "right"
+  groups[ideology<5] <- "left"
+  return(groups)
+}
+
+# non-vectorized code
+ideology_loop <- function(){
+  groups <- rep(NA, n)
+  for (i in 1:n){
+    if (ideology[i]>5) groups[i] <- "left"
+    if (ideology[i]>5) groups[i] <- "right"
+  }
+}
+
+# benchmarks
+system.time(group_ideology())
+system.time(ideology_loop())
+```
+
+This second example shows how matrix operations are vectorized too:
+
+```{r}
+set.seed(777)
+n <- 1000000
+df <- data.frame(grade1=runif(n, 0, 100),
+                 grade2=runif(n, 0, 100),
+                 grade3=runif(n, 0, 100),
+                 grade4=runif(n, 0, 100),
+                 grade5=runif(n, 0, 100))
+
+system.time(total1 <- df$grade1 + df$grade2 + df$grade3 + df$grade4 + df$grade5)
+system.time(total2 <- rowSums(df))
+total3 <- rep(NA, n)
+system.time(for (i in 1:n){
+  total3[i] <- df$grade1[i] + df$grade2[i] + df$grade3[i] + df$grade4[i] + df$grade5[i]
+  }
+)
+
+# why is rowSums slower than + ?
+
+df <- as.matrix(df)
+
+system.time(total1 <- df[,1] + df[,2] + df[,3] + df[,4] + df[,5])
+system.time(total2 <- rowSums(df))
+```
+
+
+The other way to write more efficient code is to avoid memory copy:
+
+
+```{r}
+set.seed(123)
+n <- 10000
+
+func1 <- function(){
+  rnd <- c()
+  for (i in 1:n){
+    rnd <- c(rnd, rnorm(n=1))
+  }
+  return(rnd)
+}
+
+func2 <- function(){
+  rnd <- rep(NA, n)
+  for (i in 1:n){
+    rnd[i] <- rnorm(n=1)
+  }
+  return(rnd)
+}
+
+system.time(func1())
+system.time(func2())
+
+# of course, a WAY more efficient way to run this, with vectorized function...
+
+func3 <- function(){
+  rnd <- rnorm(n=n)
+  return(rnd)
+}
+
+system.time(func3())
+
+```
+
+Memory copy applies as well to data frames. A very frequent scenario looks something like the following. You can avoid it by storing results in a list, and then using `do.call(rbind, LIST)` to convert back to a single data frame.
+
+
+```{r}
+set.seed(123)
+n <- 200
+
+## using rbind
+func1 <- function(){
+  df <- data.frame()
+  for (i in 1:n){
+      df <- rbind(df,  data.frame(
+        age = sample(18:100, n, replace=TRUE),
+        state = sample(state.abb, n, replace=TRUE),
+        party = sample(c("R", "D", "I"), n, replace=TRUE)
+      ) )
+  }
+  return(df)
+}
+
+## using lists to avoid memory copy
+init <- Sys.time()
+
+func2 <- function(){
+  df.list <- list()
+  for (i in 1:n){
+      df.list[[i]] <- data.frame(
+        age = sample(18:100, n, replace=TRUE),
+        state = sample(state.abb, n, replace=TRUE),
+        party = sample(c("R", "D", "I"), n, replace=TRUE)
+      )
+  }
+  df <- do.call(rbind, df.list)
+  return(df)
+}
+
+
+system.time(func1())
+system.time(func2())
+```
+
+Finding slow spots in your code using `Rprof`
+
+```{r}
+Rprof() # start monitoring
+invisible(func1()) # run your code (but don't show it!)
+Rprof(NULL) # stop
+summaryRprof() # see results
+
+```
+
+How to read large files faster? There are different packages to help with this; and also being specific about the data you're reading will help. `readr` is a good option:
+
+```{r}
+
+system.time(d <- read.csv("../data/EP-elections-tweets.csv"))
+system.time(d <- read.csv("../data/EP-elections-tweets.csv", stringsAsFactors=F))
+library(readr)
+system.time(d <- read_csv("../data/EP-elections-tweets.csv"))
+
+```
+

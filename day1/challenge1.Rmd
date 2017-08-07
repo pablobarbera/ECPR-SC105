@@ -1,0 +1,105 @@
+---
+title: "Challenge 1: Writing more efficient code"
+author: Pablo Barbera
+date: "August 8, 2017"
+output: html_document
+---
+
+The purpose of this challenge is to practice more efficient code. You will be presented with a series of code chunks that I'm honestly ashamed to have written! Using a combination of vectorized functions and more efficient handling of memory, try to see how fast you can make it run. Be creative!
+
+Here's the dataset we'll be using for this challenge -- a random sample of 10,000 tweets related to the 2014 EP elections in the UK. To make it a bit more challenging, we'll multiply the size of the dataset by 5.
+
+```{r}
+d <- read.csv("../data/EP-elections-tweets.csv", stringsAsFactors=F)
+d <- rbind(d, d, d, d, d)
+```
+
+## 1) Count how many tweets are classified as impolite:
+
+```{r}
+func1 <- function(){
+  
+  count <- 0
+  
+  for (i in 1:nrow(d)){
+    if (d$polite[i]=="impolite"){
+      count <- count + 1
+    }
+  }
+  return(count)
+}
+
+system.time(func1())
+
+```
+
+Your solution here:
+
+```{r}
+func2 <- function(){
+  ...
+}
+system.time(func2())
+```
+
+## 2) Count how many tweets mention Merkel:
+
+```{r}
+func1 <- function(){
+  merkel_tweets <- c()
+  for (i in 1:nrow(d)){
+    if (grepl("merkel", d$text[i], ignore.case=TRUE)==TRUE){
+      merkel_tweets <- c(merkel_tweets, i)
+    }
+  }
+  return(length(merkel_tweets))
+}
+system.time(func1())
+```
+
+Your solution here:
+
+```{r}
+func2 <- function(){
+  ...
+}
+system.time(func2())
+```
+
+
+## 3) Take a random sample of 200 tweets that are classified as "impolite"
+
+```{r}
+func1 <- function(){
+  
+  # sample random uniform number
+  d$random <- runif(nrow(d))
+  # sort by this random number
+  dd <- d[order(d$random),]
+  # loop over rows using 'while'
+  smp <- data.frame()
+  i <- 1
+  while (nrow(smp)<=500){
+    if (d$polite[i]=="impolite"){
+      smp <- rbind(smp, d[i,])
+    }
+    i <- i + 1
+  }
+  return(smp)
+
+}
+
+system.time(func1())
+
+```
+
+Your solution here:
+
+```{r}
+func2 <- function(){
+  ...
+}
+
+system.time(func2())
+```
+

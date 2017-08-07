@@ -1,0 +1,8 @@
+---
+title: "Querying an SQL database"
+author: Pablo Barbera
+date: August 11, 2017
+output: html_document
+---
+
+## Querying an SQL database

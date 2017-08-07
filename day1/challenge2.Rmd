@@ -1,0 +1,83 @@
+---
+title: "Challenge 2: Parallel computing"
+author: Pablo Barbera
+date: "August 8, 2017"
+output: html_document
+---
+
+The purpose of this challenge is to practice writing code that can run in parallel. We'll use simulation to solve the "birthday problem": given the number of people in this room, what is the probability that two people have the same birthday?
+
+Here's the code to run this simulation using a standard loop in R:
+
+```{r}
+system.time({
+# monte carlo simulation
+k <- 15 # number of people in this room
+sims <- 10000 # number of simulations 
+duplicates <- rep(NA, sims) # vector with results
+for (i in 1:sims) {
+  days <- sample(1:365, k, replace = TRUE)
+  days.unique <- unique(days) # unique birthdays
+  ## if there are duplicates, the number of unique birthdays 
+  ## will be less than the number of birthdays, which is `k'
+  ## so here we say TRUE if there are 2+ people with same birthday
+  duplicates[i] <- length(days.unique) < k
+
+}
+})
+
+## fraction of trials where at least two bdays are the same
+mean(duplicates)
+
+```
+
+
+Rewrite this loop using `%do%` from the `foreach` package. Make sure you use the correct function to combine. Does the running time increase or decrease?
+
+```{r}
+
+
+
+```
+
+Now set up a cluster and parallelize the loop using `%dopar%`. Does the running time increase or decrease? What does it tell you about when it makes sense to parallelize?
+
+```{r}
+
+
+
+```
+
+Now assume there's 1,500,000 million students in the class (one can dream...). Try re-running the previous code (100 simulations should be enough). We already know the answer for the birthday problem with the sample size. But what happens now with the running time? Why?
+
+
+```{r}
+
+# standard loop
+
+system.time({
+# monte carlo simulation
+k <- 1500000 # number of people in this room
+sims <- 10000 # number of simulations 
+duplicates <- rep(NA, sims) # vector with results
+for (i in 1:sims) {
+  days <- sample(1:365, k, replace = TRUE)
+  days.unique <- unique(days) # unique birthdays
+  ## if there are duplicates, the number of unique birthdays 
+  ## will be less than the number of birthdays, which is `k'
+  ## so here we say TRUE if there are 2+ people with same birthday
+  duplicates[i] <- length(days.unique) < k
+
+}
+})
+
+# parallelized foreach loop
+
+### YOUR CODE HERE
+
+
+```
+
+
+
+
