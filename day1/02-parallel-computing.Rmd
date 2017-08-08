@@ -14,11 +14,11 @@ The foreach package improves the way in which we run loops in R, and provides a 
 The basic structure of loops with the package is:
 
 ```{r, eval=FALSE}
-# With parallelization --> %dopar%
-output <- foreach(i = 'some object to iterate over', 'options') %dopar% {some r code}
-
 # Without parallelization --> %do%
 output <- foreach(i = 'some object to iterate over', 'options') %do% {some r code}
+
+# With parallelization --> %dopar%
+output <- foreach(i = 'some object to iterate over', 'options') %dopar% {some r code}
 ```
 
 As a first example, we can use `foreach` just like a for loop without parallelization

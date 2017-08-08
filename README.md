@@ -34,11 +34,11 @@ The course will begin with a discussion of the concept of "Big Data" and the res
 
 [Slides: Efficient data analysis with R (.pdf)](day1/slides-parallel.pdf)
 
-[Code: Efficient programming with R (.html)](html/01-efficient-programming.html)
+[Code: Efficient programming with R (.html)](html/day1/01-efficient-programming.html)
 
 [Challenge 1: Writing more efficient code](day1/challenge1.Rmd)
 
-[Code: Parallel computing with R (.html)](html/02-parallel-computing.html)
+[Code: Parallel computing with R (.html)](html/day1/02-parallel-computing.html)
 
 [Challenge 2: Parallel computing](day1/challenge2.Rmd)
 
@@ -46,19 +46,21 @@ The course will begin with a discussion of the concept of "Big Data" and the res
 
 The second session will focus on the most common application of Big Data in the social sciences: large-scale text classification. After a quick overview of the basics of machine learning, we will discuss specific details of the implementation of supervised learning algorithms in massive-scale datasets, and in particular recently-developed methods in computer science such as stochastic gradient descent, xgboost, and ensemble classifiers. Our emphasis will lie on the practical aspects: we will study these methods in the context of an application of sentiment analysis to newspaper articles, and will go through the entire research process, from the creation of a training dataset labeled by humans using crowd-sourcing platforms, to the application and validation of the machine learning algorithm, and passing through all the intermediate steps, such as cleaning and preprocessing the corpus of documents.
 
-[Slides: Supervised machine learning (.pdf)](day2/slides-supervised-ML.pdf)
+[Slides: Supervised machine learning (.pdf)](day2/slides-supervised-learning.pdf)
 
-[Code: Regularized regression](day2/01-regularized-regression.html)
+[Code: Regularized regression](html/day2/01-regularized-regression.html)
 
-[Code: SVM, Random Forests, and beyond](day2/02-advanced-sml.html)
+[Code: SVM, Random Forests, and beyond](html/day2/02-advanced-sml.html)
 
-[Challenge 1: ](day2/challenge1.Rmd)
+[Challenge 1: Text classification](day2/challenge1.Rmd)
 
-[Slides: Creating training datasets (.pdf)](day2/slides-training-data.pdf)
+[Code: Large-scale text classification](html/day2/03-big-text.html)
 
-[Code: Large-scale text classification](day2/03-big-text.html)
+[Slides: Creating training datasets (.pdf)](day2/slides-crowdsourcing.pdf)
 
-[Challenge 2: ](day2/challenge2.Rmd)
+[Code: Large-scale text classification](html/day2/04-crowdsourcing.html)
+
+[Challenge 2: Crowd-sourcing the creation of datasets](day2/challenge2.Rmd)
 
 ## Day 3
 

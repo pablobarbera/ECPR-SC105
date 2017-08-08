@@ -1,0 +1,35 @@
+TITLE: 
+
+Code the Content of a Sample of Tweets
+
+INSTRUCTIONS:
+
+In this job, you will be presented with tweets that mention Donald Trump.
+
+You will have to read the tweet and answer a set of questions about its content.
+
+CODE:
+
+<h4>Read the tweet below paying close attention to detail:</h4>
+Tweet ID: <b>{{id}}</b>
+<div class="well">
+  {{embed}}
+</div>
+<br>
+
+<!-- Question 1 -->
+<cml:radios label="Is this tweet about the US president, Donald Trump?" name="relevant" aggregation="agg" validates="required" gold="true">
+  <cml:radio label="Yes" value="yes"/>
+  <cml:radio label="No" value="no"/>
+  <cml:radio label="Don't Know" value="dk"/>
+</cml:radios>
+
+<!-- Question 2 -->
+<cml:radios label="If so, what type of opinion does the tweet express?" name="sentiment" instructions="Please read the tweet carefully." only-if="relevant:[yes]" gold="true"> 
+  <cml:radio label="Supportive of the president" value="positive"></cml:radio> 
+  <cml:radio label="Neutral regarding the president" value="neutral"></cml:radio> 
+  <cml:radio label="Against the president" value="negative"></cml:radio> 
+  <cml:radio label="Don't Know" value="dk"></cml:radio> 
+</cml:radios>
+  
+<script src='https://platform.twitter.com/widgets.js' charset='utf-8'></script>
