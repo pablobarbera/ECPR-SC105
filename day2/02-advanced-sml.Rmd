@@ -88,8 +88,8 @@ fit <- tune(svm, train.x=twdfm[training,],
 summary(fit)
 
 # best model
-bestmod <- fit$best.model
-summary(bestmod)
+bestmodel <- fit$best.model
+summary(bestmodel)
 
 # evaluating performance
 preds <- predict(bestmodel, twdfm[test,])
@@ -101,8 +101,8 @@ precision(preds, tweets$engaging[test])
 recall(preds, tweets$engaging[test])
 
 df <- data.frame(
-  vector = tweets$text[training][bestmod$index],
-  coef = bestmod$coefs,
+  vector = tweets$text[training][bestmodel$index],
+  coef = bestmodel$coefs,
   stringsAsFactors = F
 )
 

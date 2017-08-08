@@ -1,5 +1,5 @@
 ---
-title: "SVM, Random Forests, and beyond"
+title: "Large-scale text classification"
 author: Pablo Barbera
 date: August 8, 2017
 output: html_document
@@ -85,6 +85,23 @@ rf <- xgboost(data = X[training,],
 
 # out-of-sample accuracy
 preds <- predict(rf, X[test,])
+
+## function to compute accuracy
+accuracy <- function(ypred, y){
+	tab <- table(ypred, y)
+	return(sum(diag(tab))/sum(tab))
+}
+# function to compute precision
+precision <- function(ypred, y){
+	tab <- table(ypred, y)
+	return((tab[2,2])/(tab[2,1]+tab[2,2]))
+}
+# function to compute recall
+recall <- function(ypred, y){
+	tab <- table(ypred, y)
+	return(tab[2,2]/(tab[1,2]+tab[2,2]))
+}
+
 cat("\nAccuracy on test set=", round(accuracy(preds>.50, tweets$engaging[test]),3))
 cat("\nPrecision on test set=", round(precision(preds>.50, tweets$engaging[test]),3))
 cat("\nRecall on test set=", round(recall(preds>.50, tweets$engaging[test]),3))
