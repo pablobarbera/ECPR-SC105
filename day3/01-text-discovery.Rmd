@@ -57,9 +57,9 @@ head(docnames(inaugdfm))
 
 A common type of analysis to understand the content of a corpus is to extract collocations -- combinations of words that are more likely to appear together than what is expected based on their frequency distribution in the corpus as isolated words. There are different significante tests to identify whether a combination of words is a collocation or not (see the help file).
 
-```{r}
+```{r, eval=FALSE}
 # collocations (currently under development)
-nyttokens <- tokens(char_tolower(inaug), remove_numbers=TRUE, remove_punct=TRUE)
+nyttokens <- tokens(tolower(inaug), remove_numbers=TRUE, remove_punct=TRUE)
 colls <- textstat_collocations(nyttokens, max_size = 2, method = "chi2")
 head(colls)
 head(colls[colls$count>50], n=10)
@@ -98,10 +98,10 @@ topfeatures(rew)
 
 _Keyness_ is a measure of to what extent some features are specific to a (group of) document in comparison to the rest of the corpus, taking into account that some features may be too rare.
 
-```{r}
-head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2017-Trump.txt",
+```{r, eval=FALSE}
+head(textstat_keyness(inaugdfm, target="2017-Trump.txt",
                       measure="chi2"), n=20)
-head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2017-Trump.txt", 
+head(textstat_keyness(inaugdfm,  target=docnames(inaugdfm)=="2017-Trump.txt", 
                       measure="lr"), n=20)
 head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2009-Obama.txt",
                       measure="chi2"), n=20)
@@ -164,7 +164,7 @@ df <- data.frame(
 head(df[order(simils, decreasing=TRUE),], n=10)
 
 # another example...
-simils <- textstat_simil(inaugdfm, "immigration", margin="features", method="cosine")
+simils <- textstat_simil(inaugdfm, "america", margin="features", method="cosine")
 # most similar features
 df <- data.frame(
   featname = rownames(simils),

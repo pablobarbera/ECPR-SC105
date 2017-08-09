@@ -12,6 +12,7 @@ To explore an unsupervised approach to ideological scaling, let's now explore a 
 ```{r}
 cong <- read.csv("../data/congress-tweets.csv", stringsAsFactors=F)
 # creating the corpus and dfm objects
+library(quanteda)
 ccorpus <- corpus(cong$text)
 docnames(ccorpus) <- cong$screen_name
 cdfm <- dfm(ccorpus, remove=c(stopwords("english"), 

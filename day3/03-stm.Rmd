@@ -9,7 +9,7 @@ Most text corpora have not only the documents per se, but also a lot of metadata
 
 The running example will be all the posts published on the Facebook pages of Senators in the U.S. Congress between 2013 and 2014, which you just worked with. But note here that we group the posts in a different way: each document corresponds to posts on a specific day and party. Why? It better captures the assumptions behind the LDA model.
 
-```{r, eval=FALSE}
+```{r}
 library(readtext)
 fb <- readtext(file='../data/facebook/*.txt')
 # creating corpus object
@@ -149,15 +149,17 @@ save(stm, file="../backup/stm-small-output.Rdata")
 `stm` offers other functions to explore how content varies as a function of covariates. Let's take a look.
 
 ```{r}
+library(stm)
 load("../backup/stm-small-output.Rdata")
 
 # summary
 plot(stm, type = "summary", xlim = c(0, .3))
 
 # how republicans (TRUE) use topics differently
-plot(stm, type = "perspectives", topics = 1)
+plot(stm, type = "perspectives", topics = 3)
+plot(stm, type = "perspectives", topics = 4)
 
-plot(stm, type = "perspectives", topics = c(1,2))
+plot(stm, type = "perspectives", topics = c(1,10))
 
 # prevalence over time
 est <- estimateEffect(~s(date)+repub, 
@@ -168,10 +170,11 @@ plot(est, covariate="repub", topics=1:10,
 	cov.value1="D", cov.value2="R",
 	xlab = "More Democrats ... More Republicans",
 	labeltype="custom", custom.labels=paste("Topic", 1:10))
+plot(stm, type = "perspectives", topics = 8)
 
-plot(est, "date", method="continuous", topics=1:2,
+plot(est, "date", method="continuous", topics=3:4,
 	xaxt="n")
-dates <- seq(from = as.Date("2014-01-01"), to = as.Date("2014-12-31"), by="2 months")
+dates <- seq(from = as.Date("2013-01-01"), to = as.Date("2014-12-31"), by="2 months")
 axis(1, at = dates, dates)
 
 ```
