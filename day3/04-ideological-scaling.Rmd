@@ -1,0 +1,40 @@
+---
+title: "Ideological scaling: Wordfish"
+author: Pablo Barbera
+date: August 9, 2017
+output: html_document
+---
+
+## Wordfish
+
+To explore an unsupervised approach to ideological scaling, let's now explore a similar corpus, but with Twitter data. Can we recover a latent ideological dimension for Members of Congress based on the text of their tweets?
+
+```{r}
+cong <- read.csv("../data/congress-tweets.csv", stringsAsFactors=F)
+# creating the corpus and dfm objects
+ccorpus <- corpus(cong$text)
+docnames(ccorpus) <- cong$screen_name
+cdfm <- dfm(ccorpus, remove=c(stopwords("english"), 
+              "t.co", "https", "rt", "amp", "http", "t.c", "can"), 
+            remove_punct=TRUE, remove_numbers=TRUE, verbose=TRUE)
+# note heavy feature selection!
+cdfm <- dfm_trim(cdfm, min_docfreq = 25)
+# running wordfish
+wf <- textmodel(cdfm, dir=c(10, 8), model="wordfish")
+wf
+# let's look at the most discriminant words (note same notation as in slides)
+sw <- data.frame(beta=wf@beta, word=wf@features)
+sw <- sw[order(sw$beta),]
+head(sw, n=20)
+tail(sw, n=20)
+# and now we can compare the estimate positions with the ideal points...
+plot(wf@theta, cong$idealPoint)
+cor(wf@theta, cong$idealPoint)
+cor(wf@theta[cong$party=="R"], cong$idealPoint[cong$party=="R"])
+cor(wf@theta[cong$party=="D"], cong$idealPoint[cong$party=="D"])
+
+```
+
+
+
+

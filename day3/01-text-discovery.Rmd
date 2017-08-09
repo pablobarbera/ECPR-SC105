@@ -1,0 +1,263 @@
+---
+title: "Unsupervised machine learning"
+author: Pablo Barbera
+date: June 28, 2017
+output: html_document
+---
+
+## Exploring large-scale text datasets
+
+In this session we will discuss how to compute descriptive statistics of text datasets.  We'll be working with the dataset of inaugural speeches of U.S. Presidents.
+
+
+```{r}
+# reading data and computing additional variables
+library(readtext)
+library(quanteda)
+inaug <- readtext(file='../data/inaugural/*.txt')
+inaug$year <- stringr::str_sub(inaug$doc_id, 1, 4)
+
+# creating corpus object
+inaug <- corpus(inaug)
+```
+
+### Summary statistics
+
+The simplest of the summary statistics we can compute can be obtained through the `summary()` method:
+
+```{r}
+summary(inaug)
+# number of documents
+ndoc(inaug)           
+# number of tokens (total words, including punctuation!)
+summary(ntoken(inaug))
+# number of types (unique words, including punctuation!)
+summary(ntype(inaug))
+```
+
+We have already seen how to look at the most common features:
+
+```{r}
+inaugdfm <- dfm(inaug, remove_numbers=TRUE, remove_punct=TRUE, verbose=TRUE,
+              remove=stopwords("english"))
+topfeatures(inaugdfm)
+```
+
+Other basic statistics of any dataset:
+```{r}
+# number of documents and features in DFM
+ndoc(inaugdfm)
+nfeature(inaugdfm)
+# extract feature labels and document names
+head(featnames(inaugdfm), 20)
+head(docnames(inaugdfm))
+```
+
+### Collocation analysis
+
+A common type of analysis to understand the content of a corpus is to extract collocations -- combinations of words that are more likely to appear together than what is expected based on their frequency distribution in the corpus as isolated words. There are different significante tests to identify whether a combination of words is a collocation or not (see the help file).
+
+```{r}
+# collocations (currently under development)
+nyttokens <- tokens(char_tolower(inaug), remove_numbers=TRUE, remove_punct=TRUE)
+colls <- textstat_collocations(nyttokens, max_size = 2, method = "chi2")
+head(colls)
+head(colls[colls$count>50], n=10)
+
+# now with up to 3 words
+colls <- textstat_collocations(nyttokens, max_size = 3, method = "chi2")
+head(colls)
+head(colls[colls$count>50], n=10)
+
+```
+ 
+### Readability and lexical diversity 
+ 
+A text document can also be characterized based on its readability and lexical diversity, which capture different aspects of its complexity. There are MANY indices that compute this. Note that each of these functions is applied to a different type of object (`corpus` or `dfm`).
+
+```{r}
+# readability
+fk <- textstat_readability(inaug, "Flesch.Kincaid")
+plot(aggregate(fk ~ unlist(inaug[["year"]]), FUN=mean), type="l")
+
+# lexical diversity
+ld <- textstat_lexdiv(inaugdfm, "TTR")
+plot(aggregate(ld ~ unlist(inaug[["year"]]), FUN=mean), type="l")
+```
+
+### Identifying most unique features of documents
+
+
+
+```{r}
+rew <- tfidf(inaugdfm)
+# now most frequent features are different
+topfeatures(inaugdfm)
+topfeatures(rew)
+```
+
+_Keyness_ is a measure of to what extent some features are specific to a (group of) document in comparison to the rest of the corpus, taking into account that some features may be too rare.
+
+```{r}
+head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2017-Trump.txt",
+                      measure="chi2"), n=20)
+head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2017-Trump.txt", 
+                      measure="lr"), n=20)
+head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2009-Obama.txt",
+                      measure="chi2"), n=20)
+head(textstat_keyness(inaugdfm, target=docnames(inaugdfm)=="2009-Obama.txt",
+                      measure="lr"), n=20)
+head(textstat_keyness(inaugdfm, target=docvars(inaugdfm)$year>1990,
+                      measure="chi2"), n=20)
+head(textstat_keyness(inaugdfm, target=docvars(inaugdfm)$year>1990,
+                      measure="lr"), n=20)
+
+```
+
+We can use `textplot_xray` to visualize where some words appear in the corpus.
+
+```{r}
+textplot_xray(kwic(inaug, "america"))
+textplot_xray(kwic(inaug, "immigration"))
+```
+
+
+### Clustering documents and features
+
+We can identify documents that are similar to one another based on the frequency of words, using `similarity`. There's different metrics to compute similarity. Here we explore two of them: [Jaccard distance](https://en.wikipedia.org/wiki/Jaccard_index) and [Cosine distance](https://en.wikipedia.org/wiki/Cosine_similarity).
+
+```{r}
+# document similarities
+simils <- textstat_simil(inaugdfm, "2017-Trump.txt", margin="documents", method="jaccard")
+# most similar documents
+df <- data.frame(
+  docname = rownames(simils),
+  simil = as.numeric(simils),
+  stringsAsFactors=F
+)
+tail(df[order(simils),])
+head(df[order(simils),])
+
+# another example
+simils <- textstat_simil(inaugdfm, "2013-Obama.txt", margin="documents", method="jaccard")
+# most similar documents
+df <- data.frame(
+  docname = rownames(simils),
+  simil = as.numeric(simils),
+  stringsAsFactors=F
+)
+tail(df[order(simils),])
+head(df[order(simils),])
+
+```
+
+And the opposite: term similarity based on the frequency with which they appear in documents:
+```{r}
+# term similarities
+simils <- textstat_simil(inaugdfm, "unemployment", margin="features", method="cosine")
+# most similar features
+df <- data.frame(
+  featname = rownames(simils),
+  simil = as.numeric(simils),
+  stringsAsFactors=F
+)
+head(df[order(simils, decreasing=TRUE),], n=10)
+
+# another example...
+simils <- textstat_simil(inaugdfm, "immigration", margin="features", method="cosine")
+# most similar features
+df <- data.frame(
+  featname = rownames(simils),
+  simil = as.numeric(simils),
+  stringsAsFactors=F
+)
+head(df[order(simils, decreasing=TRUE),], n=10)
+
+```
+
+Each of these can then be used to cluster documents:
+```{r}
+recent <- inaugdfm[46:58,]
+# compute distances
+distances <- textstat_dist(recent, margin="documents")
+as.matrix(distances)[1:5, 1:5]
+
+# clustering
+cluster <- hclust(distances)
+plot(cluster)
+```
+
+
+A different type of clustering is [principal component analysis](https://en.wikipedia.org/wiki/Principal_component_analysis). This technique will try to identify a set of uncorrelated variables that capture most of the variance in the document-feature matrix. The first component will always capture the largest proportion of the variance; the second captures the second largest, etc. Looking at the relative proportion of the variance captured by the first component vs the rest, we can see to what extent we can reduce the dataset to just one dimension.
+
+```{r}
+# Principal components analysis
+pca <- prcomp(t(as.matrix(inaugdfm))) 
+plot(pca) # first PC captures most of the variance
+
+# plot first principal component
+plot(pca$rotation[,1], pca$rotation[,2], type="n")
+text(pca$rotation[,1], pca$rotation[,2], labels=docvars(inaugdfm)$year)
+
+# looking at features for each PC
+df <- data.frame(
+  featname = featnames(inaugdfm),
+  dim1 = pca$x[,1],
+  dim2 = pca$x[,2],
+  stringsAsFactors=FALSE
+)
+
+head(df[order(df$dim1),])
+tail(df[order(df$dim1),])
+
+head(df[order(df$dim2),])
+tail(df[order(df$dim2),])
+```
+
+A similar dimensionality reduction technique is [correspondence analysis](https://en.wikipedia.org/wiki/Correspondence_analysis). We'll see it with more detail when we get to networks, but note that the intuition and results are similar.
+
+```{r}
+out <- textmodel_ca(inaugdfm)
+
+# documents
+df <- data.frame(
+  docname = docnames(inaugdfm),
+  year = docvars(inaugdfm)$year,
+  dim1 = out$rowcoord[,1],
+  dim2 = out$rowcoord[,2],
+  stringsAsFactors=FALSE
+)
+
+head(df[order(df$dim1),])
+tail(df[order(df$dim1),])
+
+head(df[order(df$dim2),])
+tail(df[order(df$dim2),])
+
+plot(df$dim1, df$dim2, type="n")
+text(df$dim1, df$dim2, labels=df$year)
+
+# features
+df <- data.frame(
+  featname = featnames(inaugdfm),
+  dim1 = out$colcoord[,1],
+  dim2 = out$colcoord[,2],
+  stringsAsFactors=FALSE
+)
+
+head(df[order(df$dim1),])
+tail(df[order(df$dim1),])
+
+head(df[order(df$dim2),])
+tail(df[order(df$dim2),])
+```
+
+
+
+
+
+
+
+
+
+

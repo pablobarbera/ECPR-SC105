@@ -64,21 +64,19 @@ The second session will focus on the most common application of Big Data in the 
 
 ## Day 3
 
-Exploratory data analysis can be a powerful tool for social scientists when they are interested in analyzing a new dataset. The third session will cover the existing tools for large-scale discovery in "Big Data" using R, applied to textual datasets. We will start with different techniques, such as collocation analysis, TF-IDF feature weighting and word2vec, which will allow us to identify salient themes and ideas across documents. Then, we will move to topic models, which allow researchers to automatically identify latent classes of documents in a corpus, with an application to the classification of Facebook posts by politicians into relevant political issues. This session will also cover other dimensionality reduction techniques that are commonly used in the social sciences to visualize large-scale dataset.
+Exploratory data analysis can be a powerful tool for social scientists when they are interested in analyzing a new dataset. The third session will cover the existing tools for large-scale discovery in "Big Data" using R, applied to textual datasets. We will start with different techniques, such as collocation analysis, TF-IDF feature weighting and word2vec, which will allow us to identify salient themes and ideas across documents. Then, we will move to topic models, which allow researchers to automatically identify latent classes of documents in a corpus, with an application to the classification of Facebook posts by politicians into relevant political issues. This session will also cover other dimensionality reduction techniques that are commonly used in the social sciences to visualize large-scale datasets.
 
 [Slides: Topic discovery in text datasets (.pdf)](day3/slides-text-discovery.pdf)
 
 [Code: Discovery in text](day3/01-text-discovery.html)
 
-[Code: Dimensionality reduction techniques](day3/02-dimensionality-reduction.html)
+[Challenge 1: Discovery in text](day3/challenge1.Rmd)
 
-[Challenge 1: ](day3/challenge1.Rmd)
+[Code: Topic models](day3/02-topic-models.html)
 
-[Slides: Topic models (.pdf)](day3/slides-topic-models.pdf)
+[Code: STM](day3/03-stm.html)
 
-[Code: Topic models](day3/01-topic-models.html)
-
-[Challenge 2: ](day3/challenge2.Rmd)
+[Code: Ideological Scaling with Wordfish](day3/04-ideological-scaling.html)
 
 
 

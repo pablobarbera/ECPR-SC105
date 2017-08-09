@@ -1,0 +1,181 @@
+---
+title: "Topic models: STM"
+author: Pablo Barbera
+date: August 9, 2017
+output: html_document
+---
+
+Most text corpora have not only the documents per se, but also a lot of metadata associated -- we know the author, characteristics of the author, when the document was produced, etc. The structural topic model takes advantage of this metadata to improve the discovery of topics. Here we will learn how it works, how we can interpret the output, and some issues related to its usage for research.
+
+The running example will be all the posts published on the Facebook pages of Senators in the U.S. Congress between 2013 and 2014, which you just worked with. But note here that we group the posts in a different way: each document corresponds to posts on a specific day and party. Why? It better captures the assumptions behind the LDA model.
+
+```{r, eval=FALSE}
+library(readtext)
+fb <- readtext(file='../data/facebook/*.txt')
+# creating corpus object
+library(quanteda)
+fb <- corpus(fb)
+summary(fb)
+```
+
+Constructing the DFM and looking at the most frequent features...
+
+```{r, eval=FALSE}
+# constructing DFM
+fbdfm <- dfm(fb, remove_numbers=TRUE, remove_punct=TRUE, verbose=TRUE,
+              remove_url=TRUE, remove=stopwords("english"))
+fbdfm <- dfm_trim(fbdfm, min_docfreq = 5)
+save(fbdfm, file="../backup/fb-dfm.Rdata")
+```
+
+```{r}
+load("../backup/fb-dfm.Rdata")
+topfeatures(fbdfm, n=25)
+```
+
+Let's run the standard LDA just to see what we get...
+
+```{r, eval=FALSE}
+# running LDA
+library(topicmodels)
+K <- 50
+lda <- LDA(fbdfm, k = K, method = "Gibbs", 
+                control = list(verbose=25L, seed = 123, 
+                	burnin = 100, iter = 400))
+save(lda, file="../backup/lda-output.Rdata")
+```
+
+```{r}
+library(topicmodels)
+load("../backup/lda-output.Rdata")
+terms <- get_terms(lda, 15)
+terms
+```
+
+Now we will extract the metadata from the file names:
+
+```{r}
+# creating metadata
+library(stringr)
+features <- str_split(docnames(fbdfm), "_")
+repub <- unlist(lapply(features, '[', 1))
+```
+
+And we're ready to run `stm`!
+
+```{r, eval=FALSE}
+library(stm)
+stm <- stm(documents=fbdfm, K=30, prevalence=~repub, max.em.its=50)
+save(stm, file="../backup/stm-output.Rdata")
+```
+
+`stm` offers a series of features to explore the output. First, just like LDA, we can look at the words that are most associated with each topic.
+
+```{r}
+library(stm)
+load("../backup/stm-output.Rdata")
+# looking at a few topics
+labelTopics(stm, topics=1)
+labelTopics(stm, topics=4)
+labelTopics(stm, topics=5)
+labelTopics(stm, topics=7)
+labelTopics(stm, topics=9)
+```
+
+But unlike LDA, we now can estimate the effects of the features we considered into the prevalence of different topics
+
+```{r}
+# effects
+est <- estimateEffect(~repub, stm,
+	uncertainty="None")
+summary(est, topics=1)
+summary(est, topics=4)
+summary(est, topics=5)
+summary(est, topics=7)
+summary(est, topics=9)
+```
+
+Let's say we're interested in finding the most partisan topics. How would we do this?
+
+```{r}
+# let's look at the structure of the output object...
+names(est)
+length(est$parameters)
+est$parameters[[1]]
+
+# aha!
+coef <- se <- rep(NA, 30)
+for (i in 1:30){
+	coef[i] <- est$parameters[[i]][[1]]$est[2]
+	se[i] <- sqrt(est$parameters[[i]][[1]]$vcov[2,2])
+}
+
+df <- data.frame(topic = 1:30, coef=coef, se=se)
+head(df[order(df$coef),])
+tail(df[order(df$coef),])
+
+labelTopics(stm, topics=16)
+labelTopics(stm, topics=1)
+labelTopics(stm, topics=26)
+labelTopics(stm, topics=8)
+
+labelTopics(stm, topics=11)
+labelTopics(stm, topics=12)
+labelTopics(stm, topics=20)
+labelTopics(stm, topics=2)
+```
+
+Let's now try running a slightly more complex example with two features as metadata: day and party. Now we'll make both the prevalence and content a function of these variables.
+
+```{r}
+# metadata into a data frame
+library(stringr)
+features <- str_split(docnames(fbdfm), "_")
+repub <- unlist(lapply(features, '[', 1))
+date <- as.Date(
+	gsub('.txt', '', 
+		unlist(lapply(features, '[', 2))))
+meta <- data.frame(date=as.numeric(date), repub=repub)
+```
+
+```{r, eval=FALSE}
+# another (shorter) run
+stm <- stm(documents=fbdfm, K=30, prevalence=~repub+s(date),
+	max.em.its=50, content=~repub, data=meta)
+
+save(stm, file="../backup/stm-small-output.Rdata")
+```
+
+`stm` offers other functions to explore how content varies as a function of covariates. Let's take a look.
+
+```{r}
+load("../backup/stm-small-output.Rdata")
+
+# summary
+plot(stm, type = "summary", xlim = c(0, .3))
+
+# how republicans (TRUE) use topics differently
+plot(stm, type = "perspectives", topics = 1)
+
+plot(stm, type = "perspectives", topics = c(1,2))
+
+# prevalence over time
+est <- estimateEffect(~s(date)+repub, 
+	stm, uncertainty = "None", meta=meta)
+
+plot(est, covariate="repub", topics=1:10,
+	model=stm, method="difference",
+	cov.value1="D", cov.value2="R",
+	xlab = "More Democrats ... More Republicans",
+	labeltype="custom", custom.labels=paste("Topic", 1:10))
+
+plot(est, "date", method="continuous", topics=1:2,
+	xaxt="n")
+dates <- seq(from = as.Date("2014-01-01"), to = as.Date("2014-12-31"), by="2 months")
+axis(1, at = dates, dates)
+
+```
+
+
+
+

@@ -1,0 +1,83 @@
+---
+title: "Challenge 1: Text discovery"
+author: Pablo Barbera
+date: "August 8, 2017"
+output: html_document
+---
+
+In this challenge you will practice exploring a new text dataset. The folder "../data/facebook-senate" contains the posts published on the Facebook pages of Senators in the U.S. Congress between 2013 and 2014.
+
+### PART 1:
+
+Read the dataset into R using readtext. Who posted the most text in their Facebook page?
+
+```{r}
+
+
+```
+
+What are the most common features in this corpus?
+
+```{r}
+
+```
+
+
+Who is the senator with the highest readability score?
+
+```{r}
+
+```
+
+Pick a senator (or group of senators) and find the features with the highest keyness.
+
+```{r}
+
+```
+
+Now, extract the metadata about the party name from the file names and compute keyness again for Republicans vs Democrats.
+
+```{r}
+
+```
+
+Estimate the principal component analysis of the DFM. Which is the first component? Does it capture party identification?
+
+```{r}
+
+```
+
+### PART 2:
+
+Run LDA with the entire corpus. Look at the words associated to a few topics. Do you get similar results to what we get in the second part of the class?
+
+```{r}
+
+
+```
+
+Extract gender from the file name and run STM for a few iterations with this feature as a covariate for prevalence.
+
+```{r}
+
+
+```
+
+Look at how gender predicts prevalence for a few topics. What do you find?
+
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
