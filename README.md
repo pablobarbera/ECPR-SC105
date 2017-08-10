@@ -68,15 +68,15 @@ Exploratory data analysis can be a powerful tool for social scientists when they
 
 [Slides: Topic discovery in text datasets (.pdf)](day3/slides-text-discovery.pdf)
 
-[Code: Discovery in text](day3/01-text-discovery.html)
+[Code: Discovery in text](html/day3/01-text-discovery.html)
 
 [Challenge 1: Discovery in text](day3/challenge1.Rmd)
 
-[Code: Topic models](day3/02-topic-models.html)
+[Code: Topic models](html/day3/02-topic-models.html)
 
-[Code: STM](day3/03-stm.html)
+[Code: STM](html/day3/03-stm.html)
 
-[Code: Ideological Scaling with Wordfish](day3/04-ideological-scaling.html)
+[Code: Ideological Scaling with Wordfish](html/day3/04-ideological-scaling.html)
 
 
 
@@ -85,17 +85,15 @@ Exploratory data analysis can be a powerful tool for social scientists when they
 In the fourth session we will turn our attention to social networks, and in particular the detection of communities of individuals with shared interests or political preferences. The running example in this part of the course will be the classification of Twitter users along a latent ideological dimension based on the structure of the networks in which they are embedded. A common theme to this session and the previous one will be the emphasis on validation: once an unsupervised model is completed, how can we measure the quality of the results? We will discuss basics concepts of measurement theory, and best practices in the validation of the results from unsupervised statistical models.
 
 
-[Slides: Advanced network analysis (.pdf)](day4/slides-networks.pdf)
+[Slides: Advanced network analysis (.pdf)](day4/slides-networks-discovery.pdf)
 
-[Code: Community detection in networks (.html)](day4/01-community-detection.html)
+[Code: Community detection in networks (.html)](html/day4/01-community-detection.html)
 
-[Code: Latent-space models (.html)](day4/02-latent-space.html)
+[Challenge 1: Community detection](day4/challenge1.Rmd)
 
-[Challenge 1: ](day4/challenge1.Rmd)
+[Code: Latent-space models (.html)](html/day4/02-latent-space.html)
 
-[Code: Basics of UNIX (.txt)](day4/unix.txt)
-
-[Challenge 2: ](day4/challenge2.Rmd)
+[Challenge 2: Latent-space models](day4/challenge2.Rmd)
 
 
 ## Day 5
