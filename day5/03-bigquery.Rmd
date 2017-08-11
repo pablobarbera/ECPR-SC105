@@ -1,0 +1,197 @@
+---
+title: "Querying an Google BigQuery database"
+author: Pablo Barbera
+date: August 11, 2017
+output: html_document
+---
+
+## Connecting to Google BigQuery
+
+To illustrate the potential of SQL queries with large-scale databases, we'll now work with tables hosted in BigQuery -- Google's service to enable interactive analysis of massively large datasets.
+
+You can read more about how to setup a Google BigQuery database [here](https://cloud.google.com/bigquery/) and about their SQL syntax [here](https://cloud.google.com/bigquery/docs/reference/legacy-sql).
+
+I have authorized this server to connect to my database and we'll first work with one of my large datasets: all tweets posted by a random sample of 200,000 users in the US, labeled with user-level information predicted from the voter file (so two tables, one at the tweet level and another one at the user level).
+
+```{r}
+library(bigrquery)
+project <- "usc-barbera"
+set_service_token("bigquery-token.json")
+
+## tweet-level table
+query_exec(
+  "SELECT COUNT(*) AS tweet_count
+  FROM [usc-barbera:twitter_panel.tweets_20161129]",
+	project = project, useLegacySql = FALSE)
+
+query_exec(
+  "SELECT *
+  FROM [usc-barbera:twitter_panel.tweets_20161129]
+  LIMIT 2",
+	project = project, useLegacySql = FALSE)
+
+get_table(project=project, dataset="twitter_panel", table="tweets_20161129")
+
+# user-level table
+query_exec(
+  "SELECT COUNT(*) AS user_count
+  FROM [usc-barbera:twitter_panel.users_20160718]",
+	project = project, useLegacySql = FALSE)
+
+query_exec(
+  "SELECT *
+  FROM [usc-barbera:twitter_panel.users_20160718]
+  LIMIT 2",
+	project = project, useLegacySql = FALSE)
+
+get_table(project=project, dataset="twitter_panel", table="users_20160718")
+```
+
+Now let's run a few sample queries. First, let's count the number of tweets by year and month. See that the syntax is exactly the same we were using with SQLite database.
+
+```{r}
+query_exec(
+  "SELECT SUBSTR(created_at, 27, 30) AS year,
+    SUBSTR(created_at, 5, 3) AS month,
+    COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20161129]
+  GROUP BY year, month
+  ORDER BY year, month",
+  project = project, useLegacySql = FALSE)
+```
+
+
+We can use __LIKE__ to search for tweets based on their text.
+
+```{r}
+query_exec(
+  "SELECT COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20161129]
+  WHERE lower(text) LIKE '%obama%'",
+  project = project, useLegacySql = FALSE)
+
+query_exec(
+  "SELECT COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20161129]
+  WHERE lower(text) LIKE '%trump%'",
+  project = project, useLegacySql = FALSE)
+```
+
+And in combination with JOIN, it gets really easy to merge databases to, for example, count the number of tweets mentioning a specific keyword based on user-level characteristics:
+
+```{r}
+query_exec(
+  "SELECT COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20161129] AS tweets
+  JOIN [usc-barbera:twitter_panel.users_20160718] AS users
+  ON tweets.user_id_str = users.id_str
+  WHERE lower(text) LIKE '%trump%'
+  GROUP BY users.male",
+  project = project, useLegacySql = FALSE)
+```
+
+## More advanced queries
+
+Now that we're familiar with Google BigQuery, let's play with a massively large dataset -- a table that contains all trips completed in Yellow and Green taxis in New York City from 2009 to present. You can find more information [here](https://cloud.google.com/bigquery/public-data/nyc-tlc-trips). This is one of the many publicly-available Google BigQuery tables; one of them is also the GDELT project, and you can see some examples of queries [More](http://blog.gdeltproject.org/google-bigquery-gkg-2-0-sample-queries/).
+
+Let's connect with this database and see how big it is:
+
+```{r}
+get_table(project="nyc-tlc",
+          dataset="yellow",
+          table="trips")
+
+# how many taxi trips in database?
+query_exec(
+  "SELECT COUNT(*) AS count
+  FROM [nyc-tlc:yellow.trips]",
+	project = project, useLegacySql = FALSE)
+```
+
+Not bad! What is the distribution of trips by year and by month?
+
+```{r}
+# number of trips per year?
+query_exec(
+  "SELECT YEAR(pickup_datetime) AS year, 
+    COUNT(*) AS trips
+  FROM [nyc-tlc:yellow.trips]
+  GROUP BY year
+  ORDER BY year",
+  project=project, use_legacy_sql = TRUE)
+
+# number of trips per month?
+query_exec(
+  "SELECT MONTH(pickup_datetime) AS month, 
+    COUNT(*) AS trips
+  FROM [nyc-tlc:yellow.trips]
+  GROUP BY month
+  ORDER BY month",
+  project=project, use_legacy_sql = TRUE)
+```
+
+And just like with our SQL queries earlier, we can compute averages over groups.
+
+```{r}
+# average number of passengers depending of hour of day?
+query_exec(
+  "SELECT HOUR(pickup_datetime) AS hour, 
+    AVG(passenger_count) AS passengers_avg
+  FROM [nyc-tlc:yellow.trips]
+  GROUP BY hour
+  ORDER BY hour",
+  project=project, use_legacy_sql = TRUE)
+
+# average duration per hour of day?
+(res <- query_exec(
+  "SELECT 
+    HOUR(pickup_datetime) AS hour,
+    COUNT(*) AS count,
+    AVG( (dropoff_datetime-pickup_datetime)/1000000/60 ) AS duration_minutes
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime
+  GROUP BY hour
+  ORDER BY hour",
+  project=project, use_legacy_sql = TRUE))
+
+plot(res$hour, res$duration_minutes, type="l")
+
+# average length by day of the week?
+(res <- query_exec(
+  "SELECT 
+    DAYOFWEEK(pickup_datetime) AS day,
+    COUNT(*) AS count,
+    AVG( (dropoff_datetime-pickup_datetime)/1000000/60 ) AS duration_minutes
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime
+  GROUP BY day
+  ORDER BY day",
+  project=project, use_legacy_sql = TRUE))
+
+plot(res$day, res$duration_minutes, type="l")
+
+# average speed by day of week?
+query_exec(
+  "SELECT 
+    DAYOFWEEK(pickup_datetime) AS day,
+    COUNT(*) AS count,
+    AVG( (dropoff_datetime-pickup_datetime)/1000000/60 ) AS duration_minutes
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime
+  GROUP BY day
+  ORDER BY day",
+  project=project, use_legacy_sql = TRUE)
+
+```
+
+
+

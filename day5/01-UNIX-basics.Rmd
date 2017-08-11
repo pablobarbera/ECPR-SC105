@@ -1,0 +1,54 @@
+---
+title: "Basic UNIX commands"
+author: Pablo Barbera
+date: August 11, 2017
+output: html_document
+---
+
+The following is a list of basic UNIX commands and how they can be used in practice in a UNIX server:
+
+```{r}
+# changing current directory
+system("cd ../data")
+system("cd ~") # home
+system("cd day5") # home
+
+# creating directory
+system("mkdir example")
+
+# listing all files
+system("ls -lh")
+
+# removing directory
+system("rmdir example")
+
+# copying / renaming a file
+system("cp 02-sql.Rmd example-file.Rmd")
+
+# deleting file -- CAREFUL! does not ask for confirmation
+system("rm example-file.Rmd")
+
+# print parts of file
+system("cat 01-UNIX-basics.Rmd")
+system("head -n 2 01-UNIX-basics.Rmd")
+system("tail -n 2 01-UNIX-basics.Rmd")
+
+# count lines of file
+system("wc -l 01-UNIX-basics.Rmd")
+
+# grep (search in all the files in this folder)
+system("grep google *")
+
+# compress and uncompress
+system("gzip challenge2.Rmd")
+system("gunzip challenge2.Rmd")
+
+# download file
+#system("wget http://pablobarbera.com/ECPR-SC104/day1/slides-big-data.pdf")
+#system("rm slides-big-data.pdf")
+
+# see running processes
+system("ps -u bigdata03")
+
+```
+

@@ -1,0 +1,15 @@
+---
+title: "Challenge 3: Crowd-sourced text analysis"
+author: Pablo Barbera
+date: "August 11, 2017"
+output: html_document
+---
+
+Create a Data for Everyone account on CrowdFlower and follow the instructions in the tutorial to launch a task with only internal coders (you!). You can either pick your own dataset of tweets (or any other dataset) or the one provided in the example.
+
+Launch the task and code 10 tweets. Then, download the data and open it in R. Generate a couple of frequency tables just to take a look at the data and making sure all looks ok.
+
+```{r}
+
+
+```

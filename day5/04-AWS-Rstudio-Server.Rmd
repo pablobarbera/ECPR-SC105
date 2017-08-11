@@ -1,0 +1,37 @@
+---
+title: "Setting up an RStudio Server on AWS"
+author: Pablo Barbera
+date: August 11, 2017
+output: html_document
+---
+
+
+This document provides instructions to set up an instance on Amazon with an RStudio Server that can be accessible from a browser.
+
+1 - Create an account in [Amazon Web Services](https://aws.amazon.com/). You may need to enter your credit card information, but for the first year most of the services you use will fall within the free tier.
+
+2 - Go [here](http://www.louisaslett.com/RStudio_AMI/) and click on the relevant AMI (e.g. EU Central, Frankfurt). That will open an AWS window -- choose the options that make it fall within the free tier, although as you will see something like t2.small will be cheap too. Leave everything as is, although probably you want to add a bit more storage. In the security group both SSH (port 22) and HTTP (port 80) should be open ("Anywhere").
+
+3 - Make sure you download a new key pair (but you will only need to do this the first time) and keep it somewhere safe but accessible.
+
+4 - After the instance has started, copy and paste the IPv4 Public IP and paste it in your browser. The default username is "rstudio" and password is "rstudio". Change it once you log in the first time.
+
+5 - And that's pretty much it! If you want to add a permanent IP that will remain the same across sessions, you can do so by setting a Elastic IP (free as long as the instance is on):
+
+    - In the EC2 Console (https://eu-central-1.console.aws.amazon.com/ec2/v2/home?region=eu-central-1) go to Elastic IPs
+    - Click on allocate a new address -> In the next screen click ok.
+    - Select the new Elastic IP, click on Actions > Associate address > Select the instance we just created and then choose "Associate".
+    - Go to the new IP address to test that it works
+
+6 - You can also sync your home folder in the server with Dropbox (but make sure you have space), including with Selective Sync.
+
+7 - If you have multiple users, you can install R packages that work for all the users with the following steps:
+
+    - To install R packages for all users, we'll need to log in as root.
+    - Go to the EC2 console and click on "Connect"
+    - Before connecting the first step is to make the key publicly viewable. Go to the folder with the key and run: chmod 400 KEYFILE.pem
+    - Now, log in ussing ssh
+    - To install a package, run: sudo su - -c "R -e \"install.packages('streamR')\""
+    - Alternatively, run "sudo su" and then open an instance of R from an admin account.
+
+
