@@ -101,20 +101,25 @@ In the fourth session we will turn our attention to social networks, and in part
 The course will conclude with an introduction to cloud computing and database management for social scientists. Most available online resources and courses on these topics assume students are proficient in UNIX or have a background in programming. Here, however, we will start from scratch and focus on the coding skills required to conduct statistical analyses with data hosted in the “cloud”, while at the same time helping participants become familiar with programming concepts that can facilitate future collaborations with computer scientists. We will cover the most important commands in UNIX – the language required to interact with High-Performance Clusters (HPC), for example, which are now available in most universities – and test our skills in an online virtual machine hosted on Amazon Elastic Compute Cloud (EC2). In the second half of this session, we will learn the basics of SQL, and run our own queries in a dataset with over a billion geolocated tweets hosted in Google BigQuery.
 
 
-[Slides: Introduction to cloud computing (.pdf)](day5/cloud-computing.pdf)
+[Slides: Introduction to cloud computing (.pdf)](day5/slides-cloud.pdf)
 
-[Code: UNIX and cloud computing (.txt)](day5/unix-cloud.txt)
-
-[Challenge 1: Scheduling an R script using cron jobs](day5/challenge1.Rmd)
+[Code: UNIX and cloud computing (.html)](html/day5/01-UNIX-basics.html)
 
 [Slides: SQL databases (.pdf)](day5/sql-slides.pdf)
 
-[Code: Querying an SQL database (.html)](day5/01-sql.Rmd)
+[Code: Querying an SQL database (.html)](html/day5/02-sql.html)
 
-[Code: Introduction to Google Big Query (.html)](day5/02-bigquery.Rmd)
+[Challenge: Querying an SQL database (.html)](day5/challenge1.Rmd)
+
+[Code: Introduction to Google Big Query (.html)](html/day5/03-bigquery.html)
 
 [Challenge 2: Querying billion-row datasets with SQL and Google BigQuery](day5/challenge2.Rmd)
 
+[Code: Setting up RStudio Server on Amazon Web Services](html/day5/04-AWS-Rstudio-Server.html)
+
+[Slides: Creating training datasets (.pdf)](day5/slides-crowdsourcing.pdf)
+
+[Challenge 3: Crowd-sourcing the creation of datasets](day5/challenge3.Rmd)
 
 
 
