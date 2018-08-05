@@ -1,0 +1,121 @@
+---
+title: Code
+---
+
+The following list provides links to the slides and code used in the guided coding sessions. The solutions to the challenges will be made available through RStudio Server.
+
+<div class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h2 id="day1" class="panel-title">
+<a data-toggle="collapse" href="#collapse2">Monday August 6: Efficient data analysis with R.</a>
+</h2>
+</div>
+<div id="collapse1" class="panel-collapse collapse in" style="margin:12px">
+
+<ul>
+<li><p><a href="slides/01-slides-big-data.pdf">SLIDES: Introduction to the course. Good coding practices in R.</a></p>
+</li>
+
+<li><p><a href="code/00-setup.html">Introduction to RMarkdown and Setup</a> (<a href="code/00-setup.Rmd">.Rmd file</a>)</p>
+</li>
+
+<li><p><a href="slides/02-slides-parallel.pdf">SLIDES: Parallel computing</a></p>
+</li>
+
+<li><p><a href="code/01-efficient-programming.html">Efficient programming in R</a> (<a href="code/01-efficient-programming.Rmd">.Rmd file</a>)</p>
+</li>
+
+<li><p><a href="code/challenge1.Rmd">Coding challenge 1: Writing more efficient code (.Rmd file)</a></p>
+</li>
+
+<li><p><a href="code/02-parallel-computing.html">Parallel computing in R
+</a> (<a href="code/02-parallel-computing.Rmd">.Rmd file</a>)</p>
+</li>
+
+<li><p><a href="code/challenge2.Rmd">Coding challenge 2: Parallel computing (.Rmd file)</a></p>
+</li>
+
+
+</ul>
+</div>
+</div>
+</div>
+
+
+<div class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h2 id="day1" class="panel-title">
+<a data-toggle="collapse" href="#collapse2">Tuesday August 7th: Cloud computing.</a>
+</h2>
+</div>
+<div id="collapse1" class="panel-collapse collapse in" style="margin:12px">
+
+<ul>
+
+Coming soon....
+
+</ul>
+</div>
+</div>
+</div>
+
+
+<div class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h2 id="day1" class="panel-title">
+<a data-toggle="collapse" href="#collapse3">Wednesday August 8th: Large-scale discovery in networks.</a>
+</h2>
+</div>
+<div id="collapse1" class="panel-collapse collapse in" style="margin:12px">
+
+<ul>
+
+Coming soon....
+
+
+</ul>
+</div>
+</div>
+</div>
+
+
+<div class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h2 id="day1" class="panel-title">
+<a data-toggle="collapse" href="#collapse4">Thursday August 9th: Text classification at scale.</a>
+</h2>
+</div>
+<div id="collapse1" class="panel-collapse collapse in" style="margin:12px">
+
+<ul>
+
+Coming soon....
+
+</ul>
+</div>
+</div>
+</div>
+
+
+<div class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h2 id="day1" class="panel-title">
+<a data-toggle="collapse" href="#collapse5">Friday August 10th: Topic discovery in text.</a>
+</h2>
+</div>
+<div id="collapse1" class="panel-collapse collapse in" style="margin:12px">
+
+<ul>
+
+Coming soon....
+
+</ul>
+</div>
+</div>
+</div>
+
