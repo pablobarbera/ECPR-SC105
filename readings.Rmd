@@ -14,27 +14,27 @@ title: Readings
 
 <ul>
 
-<li>Barberá, P., Jost, J. T., Nagler, J., Tucker, J. A., & Bonneau, R. (2015). Tweeting From Left to Right Is Online Political Communication More Than an Echo Chamber?. <i>Psychological science</i>.</li>
+<li><p>Barberá, P., Jost, J. T., Nagler, J., Tucker, J. A., & Bonneau, R. (2015). Tweeting From Left to Right Is Online Political Communication More Than an Echo Chamber?. <i>Psychological science</i>.</p></li>
 
-<li>González-Bailón, S., Borge-Holthoefer, J., & Moreno, Y. (2013). Broadcasters and hidden influentials in online protest diffusion. <i>American Behavioral Scientist.</i></li>
+<li><p>González-Bailón, S., Borge-Holthoefer, J., & Moreno, Y. (2013). Broadcasters and hidden influentials in online protest diffusion. <i>American Behavioral Scientist.</i></p></li>
 
-<li>González-Bailón, S., & Paltoglou, G. (2015). Signals of public opinion in online communication: A comparison of methods and data sources. <i>The ANNALS of the American Academy of Political and Social Science</i>, 659(1), 95-107.</li>
+<li><p>González-Bailón, S., & Paltoglou, G. (2015). Signals of public opinion in online communication: A comparison of methods and data sources. <i>The ANNALS of the American Academy of Political and Social Science</i>, 659(1), 95-107.</p></li>
 
-<li>Leskovec, J., Rajaraman, A., & Ullman, J. D. (2014). <i>Mining of massive datasets</i>. Cambridge University Press.</li>
+<li><p>Leskovec, J., Rajaraman, A., & Ullman, J. D. (2014). <i>Mining of massive datasets</i>. Cambridge University Press.</p></li>
 
-<li>Matloff, N. (2011). <i>The art of R programming: A tour of statistical software design.</i> No Starch Press.</li>
+<li><p>Matloff, N. (2011). <i>The art of R programming: A tour of statistical software design.</i> No Starch Press.</p></li>
 
-<li>Monroe, B. L., Pan, J., Roberts, M. E., Sen, M., & Sinclair, B. (2015). No! Formal theory, causal inference, and big data are not contradictory trends in political science. <i>PS: Political Science & Politics</i>, 48(01), 71-74.</li>
+<li><p>Monroe, B. L., Pan, J., Roberts, M. E., Sen, M., & Sinclair, B. (2015). No! Formal theory, causal inference, and big data are not contradictory trends in political science. <i>PS: Political Science & Politics</i>, 48(01), 71-74.</p></li>
 
-<li>Nagler, J., & Tucker, J. A. (2015). Drawing inferences and testing theories with big data. <i>PS: Political Science & Politics</i>, 48(01), 84-88</li>
+<li><p>Nagler, J., & Tucker, J. A. (2015). Drawing inferences and testing theories with big data. <i>PS: Political Science & Politics</i>, 48(01), 84-88</p></li>
 
-<li>Lazer, D., Pentland, A. S., Adamic, L., Aral, S., Barabasi, A. L., Brewer, D., ... & Jebara, T. (2009). Life in the network: the coming age of computational social science. <i>Science</i> 323(5915), 721.</li>
+<li><p>Lazer, D., Pentland, A. S., Adamic, L., Aral, S., Barabasi, A. L., Brewer, D., ... & Jebara, T. (2009). Life in the network: the coming age of computational social science. <i>Science</i> 323(5915), 721.</p></li>
 
-<li>Roberts, M. E., Stewart, B. M., Tingley, D., Lucas, C., Leder-Luis, J., Albertson, B., ... & Rand, D. (2014). Topic models for open ended survey responses with applications to experiments. <i>American Journal of Political Science</i>, 58, 1064-1082.</li>
+<li><p>Roberts, M. E., Stewart, B. M., Tingley, D., Lucas, C., Leder-Luis, J., Albertson, B., ... & Rand, D. (2014). Topic models for open ended survey responses with applications to experiments. <i>American Journal of Political Science</i>, 58, 1064-1082.</p></li>
 
-<li>Steinert-Threlkeld, Z. C., Mocanu, D., Vespignani, A., & Fowler, J. (2015). Online social networks and offline protest. <i>EPJ Data Science</i>, 4(1), 1.</li>
+<li><p>Steinert-Threlkeld, Z. C., Mocanu, D., Vespignani, A., & Fowler, J. (2015). Online social networks and offline protest. <i>EPJ Data Science</i>, 4(1), 1.</p></li>
 
-<li>Wickham, H., & Grolemund, G. (2016). <i>R for Data Science</i>. O’Reilly</li>
+<li><p>Wickham, H., & Grolemund, G. (2016). <i>R for Data Science</i>. O’Reilly</p></li>
 </ul>
 </div>
 </div>
