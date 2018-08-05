@@ -1,0 +1,185 @@
+---
+title: "Parallel computing with R"
+author: "Pablo Barbera"
+date: "August 6, 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+### Loops using the foreach package
+
+The foreach package improves the way in which we run loops in R, and provides a construct to run loops in parallel.
+
+The basic structure of loops with the package is:
+
+```{r, eval=FALSE}
+# Without parallelization --> %do%
+output <- foreach(i = 'some object to iterate over', 'options') %do% {some r code}
+
+# With parallelization --> %dopar%
+output <- foreach(i = 'some object to iterate over', 'options') %dopar% {some r code}
+```
+
+As a first example, we can use `foreach` just like a for loop without parallelization
+
+```{r}
+library(foreach)
+result <- foreach(x = c(4,9,16)) %do% sqrt(x)
+result
+```
+
+Note that, unlike a regular for loop, foreach returns an object (by default a list) that contains the results compiled across all iterations.
+
+We can change the object returned by specifying the function used to combine results across iterations with the `.combine` option:
+
+```{r}
+result <- foreach(x = c(4,9,16), .combine = 'c') %do% sqrt(x)
+class(result)
+```
+
+Other options for `.combine` are: `cbind`, `rbind`, `+`, `*`:
+
+```{r}
+# cbind...
+result <- foreach(x = c(4,9,16), .combine = 'cbind') %do% c(sqrt(x), log(x), x^2)
+class(result)
+result
+
+# rbind
+result <- foreach(x = c(4,9,16), .combine = 'rbind') %do% c(sqrt(x), log(x), x^2)
+class(result)
+result
+
+# sum
+result <- foreach(x = c(4,9,16), .combine = '+') %do% sqrt(x)
+class(result)
+result
+
+```
+
+
+### Parallelizing our loops using foreach and doParallel
+
+Before we can parallelize our code, we need to declare a "cluster" -- that is, we need to tell R that we have multiple cores -- so that R knows how to execute the code. These are the steps involved in this process:
+
+1) Create the cluster. Note that we need to load the `doParallel` package to extend the functionality of `foreach`.
+
+```{r}
+library(doParallel)
+myCluster <- makeCluster(3, # number of cores to use
+                         type = "PSOCK") # type of cluster
+  
+```
+
+First, we choose the number of cores we want to use. You can check how many your computer has by running `detectCores()`. One good rule of thumb is to always leave one core unused for other tasks.
+
+```{r}
+detectCores()
+```
+
+We can choose between two types of clusters: 
+
+- "PSOCK": creates brand new R Sessions (so nothing is inherited from the master).
+- "FORK": Using OS Forking, copies the current R session locally (so everything is inherited from the master up to that point, including packages). Not available on Windows.
+
+2) Register the cluster with the ‘foreach’ package
+
+```{r}
+registerDoParallel(myCluster)
+```
+
+If you're running this locally, you can check your Monitor App to see that new instances of R were launched in your computer.
+
+3) And now we're ready to use our cluster! We only have to change `%do%` to `%dopar%`
+
+```{r, eval=FALSE}
+output <- foreach(i = 'some object to iterate over', 'options') %dopar% {some r code}
+```
+
+For example:
+
+```{r}
+result <- foreach(x = c(4,9,16), .combine = 'c') %dopar% sqrt(x)
+```
+
+4) Always remember to stop the cluster when you have finished!
+
+```{r}
+stopCluster(myCluster)
+```
+
+Let's run some tests to see the improvement in performance. We'll be using bootstrapping to compute the confidence intervals for a regression coefficient.
+
+```{r}
+d <- read.csv("~/data/UK-tweets.csv", stringsAsFactors=FALSE)
+nsims <- 500
+
+# without parallelization
+
+system.time({
+r <- foreach(1:nsims, .combine='c') %do% {
+  smp <- sample(1:nrow(d), replace=TRUE)
+  reg <- lm(log(favourites_count+1) ~ 
+              communication + followers_count, data=d[smp,])
+  coef(reg)[2]
+}})
+
+quantile(r, probs=c(.025, 0.975))
+
+# with parallelization
+
+myCluster <- makeCluster(3, type = "FORK") # why "FORK"?
+registerDoParallel(myCluster)
+
+system.time({
+r <- foreach(1:nsims, .combine='c') %dopar% {
+  smp <- sample(1:nrow(d), replace=TRUE)
+  reg <- lm(log(favourites_count+1) ~ communication + followers_count, data=d[smp,])
+  coef(reg)[2]
+}})
+
+stopCluster(myCluster)
+
+quantile(r, probs=c(.025, 0.975))
+
+```
+
+Why isn't the total running time 1/ncores the original running time?
+
+Let's run another example: here we run through all the inaugural presidential speeches in the US and identify the most unique words for each president (something to which we will come back later in the course).
+
+```{r}
+library(quanteda)
+library(readtext)
+inaug <- corpus(readtext("~/data/inaugural/*"))
+inaugdfm <- dfm(inaug, remove_punct=TRUE)
+
+# regular loop
+init <- Sys.time()
+
+speeches <- docnames(inaug)
+words <- list()
+for (sp in speeches){
+  words[[sp]] <- head(textstat_keyness(inaugdfm, target=sp)$feature, n=10)
+}
+
+Sys.time() - init
+
+# parallelized loop
+
+myCluster <- makeCluster(3, type = "FORK") # why "FORK"?
+registerDoParallel(myCluster)
+
+init <- Sys.time()
+
+words <- foreach(sp = speeches) %dopar% {
+  head(textstat_keyness(inaugdfm, target=sp)$feature, n=10)
+}
+
+Sys.time() - init
+stopCluster(myCluster)
+
+```
+
+
