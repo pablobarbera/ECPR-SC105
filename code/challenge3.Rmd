@@ -1,0 +1,57 @@
+---
+title: "Challenge 3: Querying an SQL database"
+author: Pablo Barbera
+date: "August 7, 2018"
+output: html_document
+---
+
+Practice writing SQL queries that answer the following questions using the database we just created:
+
+1. Who wrote the post that was shared the most times during this period? What does it say?
+
+```{r}
+library(DBI)
+db <- dbConnect(RSQLite::SQLite(), "facebook-db.sqlite")
+
+dbGetQuery(db, 
+           "SELECT screen_name, message
+           ...")
+
+```
+
+2. What about the post with the most comments?
+
+```{r}
+
+
+```
+
+3. Which was the post that received the most likes in January of 2017?
+
+```{r}
+
+
+```
+
+4. What was the photo posted by a Member of Congress that received the most "angry" reactions?
+
+```{r}
+
+```
+
+5. What was the post by `senatorsanders` that received the most "angry" reactions? And the most "love" reactions?
+
+```{r}
+
+```
+
+6. Which was the post mentioning "Trump" that was shared the most? And which was the post that received the most "love" reactions?
+
+```{r}
+
+```
+
+
+
+
+

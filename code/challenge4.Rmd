@@ -1,0 +1,52 @@
+---
+title: "Challenge 4: Practicing working with multiple SQL tables"
+author: Pablo Barbera
+date: August 7, 2018
+output: html_document
+---
+
+
+1. How many posts were published each month of the year?
+
+```{r}
+
+
+```
+
+
+2. What is the average number of likes for members of the House and the Senate? Which group is more popular on average?
+
+```{r}
+
+```
+
+3. What is the average number of likes that posts receive based on the time of the day in which they were published?
+
+```{r}
+
+
+```
+
+4. Do women receive more comments than men on average?
+
+```{r}
+
+```
+
+5. For each type of reaction (haha, love, angry...) compute the average count by party. Are there any systematic differences?
+
+```{r}
+
+```
+
+6. Compute the total number of "sad" reactions for each domain shared by Republicans. Display the top 10 domains that receive the most "sad" reactions. Then repeat the same for Democrats. What do you find?
+
+```{r}
+
+```
+
+
+
+
+
+

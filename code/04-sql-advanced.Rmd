@@ -1,0 +1,131 @@
+---
+title: "Querying an SQL database"
+author: Pablo Barbera
+date: August 7, 2018
+output: html_document
+---
+
+## Querying multiple SQL tables
+
+Now's where we get to see the magic of SQL. It makes it really easy to combine multiple SQL tables using __JOIN__. We just select columns from different tables and then specify what _key_ should be used to match them using __ON__. 
+
+The example belows shows an __inner join__, but there are other types (left vs right outer joins, cross joins...) that we will not cover in this workshop.
+
+```{r}
+library(DBI)
+db <- dbConnect(RSQLite::SQLite(), "facebook-db.sqlite")
+
+dbGetQuery(db, 
+  "SELECT posts.likes_count, congress.party, posts.date
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  LIMIT 10")
+```
+
+Once we know how to merge tables, we can use columns from both tables. For example, let's say we want to find the most shared post by a Democrat, or by a Republican. Here's how we would do it:
+
+```{r}
+dbGetQuery(db, 
+  "SELECT posts.from_name, posts.message, posts.shares_count, congress.party 
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  WHERE party = 'Democrat'
+  ORDER BY shares_count DESC
+  LIMIT 1")
+dbGetQuery(db, 
+  "SELECT posts.from_name, posts.message, posts.shares_count, congress.party 
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  WHERE party = 'Republican'
+  ORDER BY shares_count DESC
+  LIMIT 1")
+```
+
+## Grouping and aggregating
+
+SQL makes it really easy to compute aggregate statistics of one column based on values of a different column, with a series of built-in functions (COUNT, AVG, MAX, MIN...). Let's now see a few examples of this type of queries:
+
+```{r}
+# use COUNT with * to return the total number of rows
+dbGetQuery(db, 'SELECT COUNT(*) FROM posts')
+dbGetQuery(db, 'SELECT COUNT(*) FROM congress')
+```
+
+Combining everything we've learned, we can for example count the total number of posts by party, or by party and gender.
+
+```{r}
+dbGetQuery(db, 
+  "SELECT congress.party, COUNT(*) AS total_posts
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  GROUP BY congress.party")
+
+dbGetQuery(db, 
+  "SELECT congress.party, congress.gender, COUNT(*) AS total_posts
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  GROUP BY congress.party, congress.gender")
+```
+
+Here's another example. Let's say we want to look at what domains Republicans and Democrats share more frequently on their Facebook pages. How would we do this?
+
+```{r}
+dbGetQuery(db, 
+  "SELECT congress.party, domain, COUNT(*) AS domain_count
+  FROM posts JOIN Congress
+    ON congress.screen_name = posts.screen_name
+  WHERE congress.party = 'Democrat'
+  GROUP BY domain
+  ORDER BY domain_count DESC
+  LIMIT 20")
+
+dbGetQuery(db, 
+  "SELECT congress.party, domain, COUNT(*) AS domain_count
+  FROM posts JOIN Congress
+    ON congress.screen_name = posts.screen_name
+  WHERE congress.party = 'Republican'
+  GROUP BY domain
+  ORDER BY domain_count DESC
+  LIMIT 20")
+
+```
+
+There are other functions besides just __COUNT__. We can also compute averages, the maximum and minimum of a column, the sum... We can also functions like __SUBSTR__ to extract parts of a character string.
+
+```{r}
+# average number of posts by party
+dbGetQuery(db, 
+  "SELECT congress.party, AVG(posts.likes_count), COUNT(*) 
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  GROUP BY congress.party")
+
+# we can also compute it in a different way...
+dbGetQuery(db, 
+  "SELECT congress.party, SUM(posts.likes_count)/COUNT(*) AS average 
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  GROUP BY congress.party")
+
+# most popular post by party
+dbGetQuery(db, 
+  "SELECT from_name, message, congress.party, MAX(posts.likes_count), COUNT(*) 
+  FROM posts JOIN congress
+    ON congress.screen_name = posts.screen_name
+  GROUP BY congress.party")
+
+# number of posts by day of the month
+dbGetQuery(db, 
+  "SELECT SUBSTR(date, 9, 10) AS day_of_month, COUNT(*) as post_count
+  FROM posts
+  GROUP BY day_of_month")
+
+```
+
+
+
+
+
+
+
+

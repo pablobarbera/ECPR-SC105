@@ -1,0 +1,235 @@
+---
+title: "Querying an SQL database"
+author: Pablo Barbera
+date: August 7, 2018
+output: html_document
+---
+
+## Creating an SQL database
+
+For this first part of the class, we'll be working with a SQLite database, which is self-contained in a file within our hard drive, without any need to set up a server. The dataset we will work with is all Facebook posts by Members of the U.S. Congress in 2017, as collected from the public Pages API earlier this year.
+
+We'll start by connecting to the database and adding the first table, with information at the member of congress level. 
+
+```{r}
+library(DBI)
+```
+
+```{r, eval=FALSE}
+# create database: this will create a file in our hard drive
+db <- dbConnect(RSQLite::SQLite(), "facebook-db.sqlite")
+
+# reading the first file
+congress <- read.csv("~/data/congress-facebook-2017.csv",
+	stringsAsFactors=F)
+
+# adding first table: user-level data
+dbWriteTable(db, "congress", congress)
+
+# testing that it works with a simple query
+dbListFields(db, "congress")
+dbGetQuery(db, 'SELECT * FROM congress LIMIT 5')
+```
+
+Note that we have used `dbWriteTable` to add the data frame to our database, and then check that it all worked with `dbListFields` and `dbGetQuery`. As we will see in a second, this second function is what we will use to query the database, and it will always return a table.
+
+We now switch to the second table. However, the files are too big to open them all in memory. Instead, we will open them one by one, and then __append__ them to the table. Let's see how that works...
+
+```{r, eval=FALSE}
+fls <- list.files("~/data/posts", full.names=TRUE)
+
+for (f in fls){
+  
+  message(f)
+
+  # read file into memory
+  fb <- read.csv(f, stringsAsFactors=F)
+  
+  # adding to table in SQL database
+  dbWriteTable(db, "posts", fb, append=TRUE)
+  
+}
+
+# testing that it works
+dbListFields(db, "posts")
+dbGetQuery(db, 'SELECT * FROM posts LIMIT 5')
+
+# what if we make a mistake and want to remove the table?
+# dbRemoveTable(db, "posts")
+
+# and we close the connection for now
+dbDisconnect(db)
+
+```
+
+## Querying an SQL database
+
+Now that we have our tables in the database, let's see how we can query them. First we connect using `dbConnect` and then we type our query with `dbGetQuery`. Generally, we will write the query __clauses__ in capital letters and the column names in lowercase.
+
+```{r}
+db <- dbConnect(RSQLite::SQLite(), "facebook-db.sqlite")
+test <- dbGetQuery(db, 'SELECT * FROM congress LIMIT 5')
+str(test)
+```
+
+RMarkdown actually allows us to write the SQL query directly as a chunk of code:
+
+```{sql, connection=db}
+SELECT * FROM congress LIMIT 5
+```
+
+This is the list of query clauses that we will use to work with the database table:
+
+- __SELECT__: determines which columns to include in the query's result set
+
+- __FROM__: identifies the tables from which to draw data and how tables should be joined
+
+- __LIMIT__: in combination with SELECT, limits the number of records returned
+
+- __WHERE__: filter out unwanted data
+
+- __GROUP BY__: groups rows together by common column values
+
+- __ORDER BY__: sorts the rows in the final result set by one or more columns
+
+
+Let's start with some examples of __SELECT__:
+
+```{r}
+# querying just one column
+dbGetQuery(db, "SELECT name FROM congress LIMIT 10")
+
+# multiple columns
+dbGetQuery(db, "SELECT name, party FROM congress LIMIT 10")
+
+# adding expressions
+dbGetQuery(db, "SELECT from_name, likes_count/comments_count, UPPER(type) FROM posts LIMIT 10")
+
+# adding aliases to the new columns
+dbGetQuery(db, "SELECT from_name, likes_count/comments_count AS like_ratio FROM posts LIMIT 10")
+
+# it's often a good idea to write a query in multiple lines so that it's easier to read it:
+dbGetQuery(db, "SELECT from_name, 
+           likes_count/comments_count AS like_ratio 
+           FROM posts 
+           LIMIT 10")
+
+# selecting unique values from a column
+dbGetQuery(db, "SELECT DISTINCT from_name 
+           FROM posts 
+           LIMIT 10")
+
+```
+
+Now some examples of how we can use __WHERE__ to subset the database based on values of specific columns:
+
+```{r}
+# selecting based on values of a column
+dbGetQuery(db, "SELECT name, party 
+           FROM congress
+           WHERE party = 'Republican'
+           LIMIT 10")
+
+# greater than, working with dates
+dbGetQuery(db, "SELECT from_name, type, date 
+           FROM posts
+           WHERE date > '2017-01-01'
+           LIMIT 10")
+
+# AND operator
+dbGetQuery(db, "SELECT from_name, type, date, likes_count 
+           FROM posts
+           WHERE date > '2017-06-01' AND type != 'photo' 
+              AND likes_count > 500
+           LIMIT 10")
+
+# OR operator
+dbGetQuery(db, "SELECT from_name, type, date, comments_count 
+           FROM posts
+           WHERE comments_count>100 AND (type = 'photo' OR type = 'video')
+           LIMIT 10")
+
+# membership, IN
+dbGetQuery(db, "SELECT from_name, type, date, comments_count 
+           FROM posts
+           WHERE type IN ('video', 'event')
+           LIMIT 10")
+
+# matching conditions:
+# _ matches exactly one character
+# % matches any number of characters
+dbGetQuery(db, "SELECT from_name, type, date, comments_count 
+           FROM posts
+           WHERE date LIKE '2017-01-__'
+           LIMIT 10")
+
+dbGetQuery(db, "SELECT from_name, type, date, comments_count 
+           FROM posts
+           WHERE date LIKE '2017-03%'
+           LIMIT 10")
+
+# SQLite does not have regular expressions, but we can get creative...
+dbGetQuery(db, "SELECT from_name, message, date
+           FROM posts
+           WHERE message LIKE '%hungary%'
+           LIMIT 1")
+
+```
+
+
+Very useful for us -- __GROUP BY__ allows us to aggregate results based on values of a specific variables. We will come back to this later, so don't worry about it for now.
+
+```{r}
+dbGetQuery(db, 
+  "SELECT from_name, COUNT(*) AS post_count
+  FROM posts
+  GROUP BY from_name
+  LIMIT 10")
+```
+
+And we can then order the results using __ORDER BY__. The default is alphabetical order for the first column, but we can change that:
+
+```{r}
+# sort by type_count
+dbGetQuery(db, 
+  "SELECT type, COUNT(type) AS type_count
+  FROM posts
+  GROUP BY type
+  ORDER BY type_count")
+
+# now in descending orders
+dbGetQuery(db, 
+  "SELECT type, COUNT(type) AS type_count
+  FROM posts
+  GROUP BY type
+  ORDER BY type_count DESC")
+
+# which was the most popular post?
+dbGetQuery(db, 
+  "SELECT from_name, message, likes_count, datetime
+  FROM posts
+  ORDER BY likes_count DESC
+  LIMIT 1")
+
+# You can also specify the column number instead of the name
+dbGetQuery(db, 
+  "SELECT from_name, message, likes_count, datetime
+  FROM posts
+  ORDER BY 3 DESC
+  LIMIT 1")
+
+# what was the post with the highest comment to like ratio? We subset only posts with 1000 likes or more to avoid outliers.
+dbGetQuery(db,
+  "SELECT from_name, message, likes_count, comments_count, date,   
+      comments_count/likes_count AS comment_like_ratio
+  FROM posts
+  WHERE likes_count > 1000
+  ORDER BY comment_like_ratio DESC
+  LIMIT 5")
+```
+
+
+
+
+
+

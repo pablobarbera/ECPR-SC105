@@ -1,0 +1,83 @@
+---
+title: "Challenge 5: Querying an Google BigQuery database"
+author: Pablo Barbera
+date: August 7, 2018
+output: html_document
+---
+
+Now it's your turn to practice querying this BigQuery database! Write code to answer the following questions...
+
+```{r}
+library(bigrquery)
+project <- "usc-barbera"
+set_service_token("~/credentials/bigquery-token.json")
+```
+
+1. We will start with a follow-up to the example on validating the predicted party labels. Compute the proportion of users within each predicted party group that mentioned the words `progressive`, `liberal` or `democrat` in their description. Which group has the highest proportion?
+
+```{r}
+
+
+```
+
+2. Compute the total number of tweets per hour of the day that mention the string `good morning`. Clue: you can use the `HOUR` operator. Then plot the count of tweets (y-axis) per hour of the day (x-axis). What do you find? Do you notice any interesting pattern?
+
+```{r}
+
+
+df <- df[order(df$hour),]
+plot(df$hour, df$morning_count, type="l")
+```
+
+3. Now replicate this analysis but for tweets that mention the string `good night`. 
+
+```{r}
+
+
+```
+
+4. To try to investigate why you find any surprising pattern, do a `JOIN` of the tweet-level table and the user-level table and look at a few of the `location` fields for users that tweet `good morning` or `good night` at unexpected times. What do you find?
+
+```{r}
+
+
+```
+
+5. It was recently discovered that the Twitter acount `@TEN_GOP`, which appeared to belong to the Republican party of Tennessee, was actually handled by a Russian troll. This user is not in the dataset, but we can find out if any user in the sample retweeted any message by this account.
+
+Create a database with all the retweets of this account. Clue: you can just search for the string `RT @TEN_GOP`. How many retweets are there?
+
+```{r}
+
+
+
+```
+
+6. To get a sense of what this account was tweeting, use the code below to create a wordcloud of the most frequent words. Note that this code assumes you have a data frame called `df` with a variable named `text` that contains the text of the tweets.
+
+```{r}
+library(quanteda)
+text <- paste(df$text, collapse=" ")
+textplot_wordcloud(dfm(corpus(text),
+                       remove_punct=TRUE,
+                       remove=c(stopwords("en"), "@ten_gop", "rt", "https",
+                                "t.co")),
+                  max.words=100, scale=c(3, .5), rot.per=0)
+```
+
+7. Which party group was more likely to retweet this account? What about the age groups? 
+
+```{r}
+
+
+
+
+
+```
+
+8. (Optional) Can you compute the proportion of users within each party that retweeted `@TEN_GOP`?
+
+
+```{r}
+
+```

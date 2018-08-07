@@ -5,7 +5,7 @@ date: "August 6, 2018"
 output: html_document
 ---
 
-The purpose of this challenge is to practice more efficient code. You will be presented with a series of code chunks that I'm honestly ashamed to have written! Using a combination of vectorized functions and more efficient handling of memory, try to see how fast you can make it run. Be creative!
+The purpose of this challenge is to practice writing more efficient code. You will be presented with a series of code chunks that I'm honestly ashamed to have written! Using a combination of vectorized functions and more efficient handling of memory, try to see how fast you can make it run. Be creative!
 
 Here's the dataset we'll be using for this challenge -- a random sample of 5,000 tweets related to the 2014 EP elections in the UK. To make it a bit more challenging, we'll multiply the size of the dataset by 5. We will also make our life easier by removing observations with missing values.
 
@@ -80,7 +80,7 @@ func1 <- function(){
   # loop over rows using 'while'
   smp <- data.frame()
   i <- 1
-  while (nrow(smp)<=500){
+  while (nrow(smp)<200){
     if (d$polite[i]=="impolite"){
       smp <- rbind(smp, d[i,])
     }

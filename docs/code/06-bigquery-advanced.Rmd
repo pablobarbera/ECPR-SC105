@@ -1,0 +1,176 @@
+---
+title: "Querying a massive-scale Google BigQuery database"
+author: Pablo Barbera
+date: August 7, 2018
+output: html_document
+---
+
+## More advanced queries
+
+Now that we're familiar with Google BigQuery, let's play with a massively large dataset -- a table that contains all trips completed in Yellow and Green taxis in New York City from 2009 to present. You can find more information [here](https://cloud.google.com/bigquery/public-data/nyc-tlc-trips). 
+
+This is one of the many publicly-available Google BigQuery tables; one of them is also the GDELT project, and you can see some examples of queries [More](http://blog.gdeltproject.org/google-bigquery-gkg-2-0-sample-queries/). For a complete list of public datasets, see [here](https://cloud.google.com/bigquery/public-data/). Note that when you use these datasets, storage is free but you still need to pay for the queries.
+
+Let's connect with this database and see how big it is:
+
+```{r}
+library(bigrquery)
+project <- "usc-barbera"
+set_service_token("~/credentials/bigquery-token.json")
+
+get_table(project="nyc-tlc",
+          dataset="yellow",
+          table="trips")
+
+# how many taxi trips in this table?
+query_exec(
+  "SELECT COUNT(*) AS count
+  FROM [nyc-tlc:yellow.trips]",
+	project = project, useLegacySql = FALSE)
+```
+
+Not bad! What is the distribution of trips by year and by month?
+
+```{r}
+# number of trips per year?
+query_exec(
+  "SELECT YEAR(pickup_datetime) AS year, 
+    COUNT(*) AS trips
+  FROM [nyc-tlc:yellow.trips]
+  GROUP BY year
+  ORDER BY year",
+  project=project, use_legacy_sql = TRUE)
+
+# number of trips per month?
+query_exec(
+  "SELECT MONTH(pickup_datetime) AS month, 
+    COUNT(*) AS trips
+  FROM [nyc-tlc:yellow.trips]
+  GROUP BY month
+  ORDER BY month",
+  project=project, use_legacy_sql = TRUE)
+```
+
+How would we compute the average speed?
+
+```{r}
+# First, let's compute distance and duration separately
+query_exec(
+  "SELECT AVG(trip_distance) AS avg_distance_miles,
+  AVG( (dropoff_datetime-pickup_datetime)/1000000/60/60) 
+      AS avg_duration_hours
+  FROM [nyc-tlc:yellow.trips]",
+   project=project)
+# Now we can compute it in a single step
+query_exec(
+  "SELECT AVG(
+      trip_distance / 
+      ( (dropoff_datetime-pickup_datetime)/1000000/60/60 ) ) 
+      AS avg_speed
+  FROM [nyc-tlc:yellow.trips]",
+   project=project)
+
+# but it sounds like there might be some outliers, let's try to fix it:
+query_exec(
+  "SELECT AVG(
+      trip_distance / 
+      ( (dropoff_datetime-pickup_datetime)/1000000/60/60 ) ) 
+      AS avg_speed
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime",
+   project=project)
+```
+
+And just like with our SQL queries earlier, we can compute averages over groups.
+
+```{r}
+# average number of passengers depending of hour of day?
+query_exec(
+  "SELECT HOUR(pickup_datetime) AS hour, 
+    AVG(passenger_count) AS passengers_avg
+  FROM [nyc-tlc:yellow.trips]
+  GROUP BY hour
+  ORDER BY hour",
+  project=project, use_legacy_sql = TRUE)
+
+# average duration per hour of day?
+(res <- query_exec(
+  "SELECT 
+    HOUR(pickup_datetime) AS hour,
+    COUNT(*) AS count,
+    AVG( (dropoff_datetime-pickup_datetime)/1000000/60 ) AS duration_minutes
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime
+  GROUP BY hour
+  ORDER BY hour",
+  project=project, use_legacy_sql = TRUE))
+
+plot(res$hour, res$duration_minutes, type="l")
+
+# average length by day of the week?
+(res <- query_exec(
+  "SELECT 
+    DAYOFWEEK(pickup_datetime) AS day,
+    COUNT(*) AS count,
+    AVG( (dropoff_datetime-pickup_datetime)/1000000/60 ) AS duration_minutes
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime
+  GROUP BY day
+  ORDER BY day",
+  project=project, use_legacy_sql = TRUE))
+
+plot(res$day, res$duration_minutes, type="l")
+
+# average speed by day of week?
+query_exec(
+  "SELECT 
+    DAYOFWEEK(pickup_datetime) AS day,
+    COUNT(*) AS count,
+    AVG(
+      trip_distance / 
+      ( (dropoff_datetime-pickup_datetime)/1000000/60/60 ) ) 
+      AS avg_speed
+  FROM [nyc-tlc:yellow.trips]
+  WHERE 
+    trip_distance > 0
+    AND fare_amount/trip_distance BETWEEN 2 AND 10
+    AND dropoff_datetime > pickup_datetime
+  GROUP BY day
+  ORDER BY day",
+  project=project, use_legacy_sql = TRUE)
+
+```
+
+
+## Uploading data to BigQuery
+
+How can we add our own data to a BigQuery table? We can also do it with R using the `bq_table_upload` function.
+
+```{r}
+congress <- read.csv("~/data/congress-facebook-2017.csv",
+	stringsAsFactors=F)
+
+tab <- bq_table("usc-barbera", "twitter_panel", "congress")
+bq_table_upload(tab, congress)
+
+query_exec(
+  "SELECT 
+    party, COUNT(1) AS count
+  FROM [usc-barbera:twitter_panel.congress]
+  GROUP BY party",
+  project="usc-barbera", use_legacy_sql = TRUE)
+
+# delete table
+bq_table_delete(tab)
+
+```
+

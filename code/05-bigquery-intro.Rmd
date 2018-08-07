@@ -1,0 +1,226 @@
+---
+title: "Introduction to Google BigQuery databases"
+author: Pablo Barbera
+date: August 7, 2018
+output: html_document
+---
+
+## Connecting to Google BigQuery
+
+To illustrate the potential of SQL queries with large-scale databases, we'll now work with tables hosted in BigQuery -- Google's service to enable interactive analysis of massively large datasets.
+
+You can read more about how to setup a Google BigQuery database [here](https://cloud.google.com/bigquery/) and about their SQL syntax [here](https://cloud.google.com/bigquery/docs/reference/legacy-sql).
+
+I have authorized this server to connect to my database and we'll first work with one of my large datasets: all tweets posted by a random sample of 200,000 users in the US, labeled with user-level information predicted from the voter file (so two tables, one at the tweet level and another one at the user level).
+
+```{r}
+library(bigrquery)
+project <- "usc-barbera"
+set_service_token("~/credentials/bigquery-token.json")
+```
+
+The tweet-label table currently contains 388 million tweets and five variables: `id_str` (tweet ID), `user_id_str` (user ID), `datetime` (time of the tweet in BigQuery datetime format), `date` (date of tweet in string format), and `text` of the tweet
+
+```{r}
+## tweet-level table
+query_exec(
+  "SELECT COUNT(*) AS tweet_count
+  FROM [usc-barbera:twitter_panel.tweets_20170721]",
+	project = project)
+
+query_exec(
+  "SELECT *
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  LIMIT 2",
+	project = project)
+
+get_table(project=project, dataset="twitter_panel", table="tweets_20170721")
+```
+
+The user-level table has information about 200,000 users. For each of them, the following variables are available: `user_id_str` (user ID), `male` (TRUE if user is predicted to be male), predicted `age` (with values 1 = 18-25, 2 = 26-40, 3 = 40+), predicted `party` (with values 1 = None/Others, 2 = Democrat, 3 = Republican), predicted `race` (with values 1 = Black, 2 = Hispanic, 3 = Asian, 4 = White), predicted `turnout` in 2012, `name` of user, `description` of user, `followers_count`, `statuses_count`, `friends_count`, `location` field in user's profile, and `lang` (account language).
+
+More information about how this dataset was collected is available [in this paper](http://pablobarbera.com/static/less-is-more.pdf).
+
+```{r, eval=FALSE}
+# user-level table
+query_exec(
+  "SELECT COUNT(*) AS user_count
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]",
+	project = project)
+
+query_exec(
+  "SELECT *
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]
+  LIMIT 2",
+	project = project)
+
+get_table(project=project, dataset="twitter_panel", table="users_subset_20160718")
+```
+
+Now let's run a few sample queries. First, let's count the number of tweets by year and month. See that the syntax is exactly the same we were using with SQLite database. The only difference is that now we're using the `YEAR` and `MONTH` operators to extract the relevant components of the `datetime` field.
+
+```{r}
+query_exec(
+  "SELECT YEAR(datetime) AS year,
+    MONTH(datetime) AS month,
+    COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  GROUP BY year, month
+  ORDER BY year, month",
+  project = project)
+```
+
+Now, let's switch to the user-level table and look at the distribution of languages by party.
+
+```{r}
+query_exec(
+  "SELECT lang, party, COUNT(*) AS user_count
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]
+  GROUP BY party, lang
+  ORDER BY party, user_count DESC",
+  project = project)
+
+```
+
+We can also use __LIKE__ to search for tweets based on their text.
+
+```{r}
+query_exec(
+  "SELECT COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  WHERE lower(text) LIKE '%obama%'",
+  project = project)
+
+query_exec(
+  "SELECT COUNT(*)
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  WHERE lower(text) LIKE '%trump%'",
+  project = project)
+```
+
+Let's look at another example for the user-level table. As a validation of the party predictions, let's look at mentions of key political words in users' profiles across parties. Note that instead of `LIKE` we can directly use [regular expressions](https://cloud.google.com/bigquery/docs/reference/legacy-sql#regexp_match), which give us a bit more flexibility.
+
+```{r}
+query_exec(
+  "SELECT party, COUNT(*) AS user_count
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]
+  WHERE REGEXP_MATCH(LOWER(description), 'conservative|republican')
+  GROUP BY party
+  ORDER BY party",
+  project = project)
+```
+
+But one potential issue here: the number of users across groups may also vary, so what we need to compute is the _proportion_ of users that mention these keywords on their profile. How can we do this? One option is to do it manually after collecting the data:
+
+```{r}
+(df <- query_exec(
+  "SELECT party, 
+      SUM(REGEXP_MATCH(LOWER(description), 'conservative|republican')) AS user_count, 
+    COUNT(UNIQUE(user_id_str)) AS total_users
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]
+  GROUP BY party
+  ORDER BY party",
+  project = project))
+(df$user_count / df$total_users) * 100
+
+```
+
+But we can also do it in one step using a `subselect`:
+
+```{r}
+query_exec(
+  "SELECT party, user_count, total_users, 100 * (user_count / total_users) AS proportion
+  FROM (SELECT party, 
+      SUM(REGEXP_MATCH(LOWER(description), 'conservative|republican')) AS user_count, 
+      COUNT(UNIQUE(user_id_str)) AS total_users
+      FROM [usc-barbera:twitter_panel.users_subset_20160718]
+      GROUP BY PARTY)
+  ORDER BY party, proportion",
+  project=project)
+```
+
+What is happening here? We are using a nested query, creating a new table on the spot. Let's try to understand by looking at that table we created:
+
+```{r}
+query_exec(
+  "SELECT party, 
+      SUM(REGEXP_MATCH(LOWER(description), 'conservative|republican')) AS user_count, 
+      COUNT(UNIQUE(user_id_str)) AS total_users
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]
+  GROUP BY PARTY",
+  project=project)
+
+```
+
+Note that this last query is equivalent to:
+
+```{r}
+query_exec(
+  "SELECT party, COUNT(*) AS user_count
+  FROM [usc-barbera:twitter_panel.users_subset_20160718]
+  WHERE lower(description) LIKE '%liberal%' 
+      OR lower(description) LIKE '%democrat%'
+  GROUP BY party
+  ORDER BY party",
+  project = project)
+```
+
+We can also compute counts at the date level to obtain a plot showing the evolution in the number of tweets over time that e.g. mention the word `happy`. 
+
+```{r}
+df <- query_exec(
+  "SELECT date, COUNT(*) AS happy_count
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  WHERE lower(text) LIKE '%happy%'
+  GROUP BY date",
+  project = project)
+
+df <- df[order(df$date),]
+plot(as.Date(df$date), df$happy_count, type="l")
+```
+
+Which are the happiest days of the year? Two ways of doing this...
+
+```{r}
+head(df[order(df$happy_count, decreasing = TRUE),])
+
+query_exec(
+  "SELECT date, COUNT(*) AS happy_count
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  WHERE lower(text) LIKE '%happy%'
+  GROUP BY date
+  ORDER BY happy_count DESC
+  LIMIT 10",
+  project = project)
+
+```
+
+How did the popularity of the `#BlackLivesMatter` hashtag evolve over time?
+
+```{r}
+df <- query_exec(
+  "SELECT date, COUNT(*) AS blm_count
+  FROM [usc-barbera:twitter_panel.tweets_20170721]
+  WHERE lower(text) LIKE '%blacklivesmatter%'
+  GROUP BY date",
+  project = project)
+
+df <- df[order(df$date),]
+plot(as.Date(df$date), df$blm_count, type="l")
+```
+
+And in combination with JOIN, it gets really easy to merge databases to, for example, count the number of tweets mentioning a specific keyword based on user-level characteristics:
+
+```{r}
+query_exec(
+  "SELECT users.party, 
+    COUNT(*) AS tweet_count
+  FROM [usc-barbera:twitter_panel.users_subset_20160718] AS users
+  JOIN [usc-barbera:twitter_panel.tweets_20170721] AS tweets
+  ON tweets.user_id_str = users.user_id_str
+  WHERE lower(text) LIKE '%immigra%'
+  GROUP BY users.party,
+  ORDER BY users.party",
+  project = project)
+```
+
