@@ -48,7 +48,7 @@ Now set up a cluster and parallelize the loop using `%dopar%`. Does the running 
 
 ```
 
-Now assume there's 100,000 million students in the class (one can dream...). Try re-running the previous code (let's increase it now to 1000 simulations to make it a bit more exciting). We already know the answer for the birthday problem with the sample size. But what happens now with the running time? Why?
+Now assume there's 100,000 million students in the class (one can dream...). Try re-running the previous code (let's increase it now to 1000 simulations to make it a bit more exciting). We already know the answer for the birthday problem with the sample size -- the probability will be 1. But what happens now with the running time? Why?
 
 
 ```{r}

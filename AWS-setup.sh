@@ -79,3 +79,40 @@ do
 	cp /home/rstudio/code/challenge3-solutions.html /home/bigdata$i/code/
 	sudo chown bigdata$i -R /home/bigdata$i/
 done
+
+# materials day 3
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/07-networks-intro.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/08-community-detection.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/09-latent-space.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge6.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge7.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/data/accounts-twitter-data.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/ecpr-edges.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/ecpr-nodes.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/GOT-edges.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/house.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/insta-edges.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/insta-nodes.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/senate.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/UK-follower-network.rdata /home/bigdata$i/data/
+	cp /home/rstudio/data/UK-mps-data.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/US-follower-network.rdata /home/bigdata$i/data/
+	mkdir /home/bigdata$i/backup/
+	cp /home/rstudio/backup/ca-results.rdata /home/bigdata$i/backup/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+# solutions challenge 4 + 5
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/challenge4-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge4-solutions.html /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge5-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge5-solutions.html /home/bigdata$i/code/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+
+

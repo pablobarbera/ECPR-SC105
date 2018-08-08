@@ -95,7 +95,24 @@ The following list provides links to the slides and code used in the guided codi
 
 <ul>
 
-Coming soon....
+<li><p><a href="slides/04-slides-networks.pdf">SLIDES: Large-scale discovery in networks.</a></p>
+</li>
+
+<li><p><a href="code/07-networks-intro.html">Basics of network analysis</a> (<a href="code/07-networks-intro.Rmd">.Rmd file</a>)</p>
+</li>
+
+<li><p><a href="code/08-community-detection.html">Community detection in large-scale networks</a> (<a href="code/08-community-detection.Rmd">.Rmd file</a>)</p>
+</li>
+
+<li><p><a href="code/challenge6.Rmd">Coding challenge 6 (.Rmd file)</a></p>
+
+
+<li><p><a href="code/09-latent-space.html">Latent space network models
+</a> (<a href="code/09-latent-space.Rmd">.Rmd file</a>)</p>
+</li>
+
+<li><p><a href="code/challenge7.Rmd">Coding challenge 7 (.Rmd file)</a></p>
+</li>
 
 
 </ul>

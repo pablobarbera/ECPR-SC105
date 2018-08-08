@@ -1,0 +1,102 @@
+---
+title: "Social network analysis with R"
+author: Pablo Barbera
+date: August 8, 2018
+output: html_document
+---
+
+#### Importing network data into R
+
+To familiarize ourselves with social network analysis before we turn to social media, we will looking at a network from the book ``A Storm of Words'', the third book in the Song of Ice and Fire series by George R.R. Martin.
+
+The source of this dataset is this [blog post](https://www.macalester.edu/~abeverid/thrones.html). Each character in the book will be a different nodes. Each edge between two characters indicates their names appeared within 15 words of one another in the text of the book.
+
+The first step is to read the list of edges in this network:
+
+```{r, echo=FALSE, message=FALSE}
+library(igraph)
+edges <- read.csv("~/data/GOT-edges.csv", stringsAsFactors=F)
+head(edges)
+```
+
+How do we convert this dataset into a network object in R? There are multiple packages to work with networks, but the most popular is `igraph` because it's very flexible and easy to do, and in my experience it's much faster and scales well to very large networks. Other packages that you may want to explore are `sna` and `networks`.
+
+Now, how do we create the igraph object? We can use the `graph_from_data_frame` function:
+
+```{r}
+g <- graph_from_data_frame(d=edges, directed=FALSE)
+g
+```
+
+
+What does it mean?
+- `U` means undirected  
+- `N` means named graph  
+- `107` is the number of nodes  
+- `352` is the number of edges  
+- `name (v/c)` means _name_ is a node attribute and it's a character  
+- `weight (e/n)` means _weight_ is an edge attribute and it's numeric  
+
+This is how you access specific elements within the igraph object:
+
+```{r}
+V(g) # nodes
+V(g)$name # names of each node
+E(g) # edges
+g[1:10, 1:10] # adjacency matrix
+g[1,1:20] # first row of adjacency matrix
+```
+
+#### Measuring node importance
+
+What are the most important nodes in a network? We can answer this question computing a metric of  __centrality__.
+
+The most basic measure is __degree__, the number of adjacent edges to each node. It is often considered a measure of direct influence. In this network, it will be the total number of times each user co-appears with someone else.
+
+```{r}
+sort(degree(g))
+```
+
+In directed graphs, there are three types of degree: indegree (incoming edges), outdegree (outgoing edges), and total degree. You can compute these using `mode="in"` or `mode="out"` or `mode="total"`. 
+
+```{r}
+tail(sort(degree(g, mode="in")))
+tail(sort(degree(g, mode="out")))
+```
+
+Here they will be identical because the network is undirected.
+
+__Closeness__ measures how many steps are required to access every other node from a given node. It's a measure of how long information takes to arrive (who hears news first?), or how easily a node can reach other nodes. Higher values mean less centrality.
+
+```{r}
+tail(sort(closeness(g, normalized=TRUE)))
+```
+
+__Betweenness__ measures brokerage or gatekeeping potential. It is (approximately) the number of shortest paths between nodes that pass through a particular node. It defines the importance of a node is in terms of how frequently it connects other nodes.
+
+```{r}
+tail(sort(betweenness(g)))
+```
+
+#### Network properties
+
+Let's now try to describe what a network looks like as a whole. An important measure is `edge_density` -- the proportion of edges in the network over all possible edges that could exist.
+
+```{r}
+edge_density(g)
+```
+
+`reciprocity` measures the propensity of each edge to be a mutual edge; that is, the probability that if `i` is connected to `j`, `j` is also connected to `i`.
+
+```{r}
+reciprocity(g)
+```
+
+Why is it 1?
+
+`transitivity`, also known as clustering coefficient, measures that probability that adjacent nodes of a network are connected. In other words, if `i` is connected to `j`, and `j` is connected to `k`, what is the probability that `i` is also connected to `k`?
+
+```{r}
+transitivity(g)
+```
+

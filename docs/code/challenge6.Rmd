@@ -1,0 +1,43 @@
+---
+title: "Challenge 6: Community detection"
+author: Pablo Barbera
+date: "August 8, 2018"
+output: html_document
+---
+
+You will now practice running community detection algorithms on a network based on data collected from Instagram. Each node here is one hashtag and an edge indicates how often a pair of hashtags appeared in the same caption, based on a random sample of 10,000 pictures with each of the hashtags. Every hashtag that had been used at least 1,000,000 times in Instagram as of May 2014 is included here. (Sadly, the data is not publicly available anymore!)
+
+Read the data (nodes and edges) in R and build an igraph object. How many nodes and edges does the network have?
+
+```{r}
+nodes <- read.csv("~/data/insta-nodes.csv", stringsAsFactors=F)
+head(nodes)
+edges <- read.csv("~/data/insta-edges.csv", stringsAsFactors=F)
+head(edges)
+
+## YOUR CODE HERE
+
+```
+
+Which are the most central hashtags? Use different metrics of centrality. Do you get different results depending on the metric? Why?
+
+
+```{r}
+
+```
+
+Run a community detection algorithm with this network object. (I suggest label propagation.) How many clusters do you find? Then, add the cluster membership of each hashtag to the original nodes data frame so that we can work with it.
+
+```{r}
+
+```
+
+Explore the hashtags that appear within the same clusters for a few of these clusters. Do you find that these groups tend to be homogeneous? What type of "communities" do you find? What characteristics do they have in common?
+
+```{r}
+
+```
+
+
+
+

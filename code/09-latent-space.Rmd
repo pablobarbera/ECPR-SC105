@@ -1,0 +1,123 @@
+---
+title: "Latent space models"
+author: Pablo Barbera
+date: August 8, 2018
+output: html_document
+---
+
+#### Estimating political ideology
+
+In this guided coding session, we will apply a latent space model to the network of users following 10 or more political accounts in the US. We will explore whether we can use this method to derive valid estimates of political ideology. This exercise is based on our paper published in [Psychological Science](http://pss.sagepub.com/content/26/10/1531).
+
+The first is to load the matrix of users following political accounts. If you want to see how the data was collected, as well as the code to create it, you can go [here](https://github.com/pablobarbera/twitter_ideology/tree/master/2016-election). We will load the `Matrix` package to deal with this sparse matrix, and `tweetscores` to estimate correspondence analysis.
+
+
+```{r}
+library(Matrix)
+library(tweetscores)
+# adjacency matrix
+load("~/data/US-follower-network.rdata")
+dim(y)
+y[1:5,1:5]
+
+# data about columns
+users <- read.csv("~/data/accounts-twitter-data.csv")
+head(users)
+table(users$type)
+```
+
+One of the advantages of correspondence analysis with respect to other methods is that we can add "supplementary columns" -- parts of the matrix not included in the estimation of the latent space, but that can be then projected onto that same latent space. We will take advantage of this to make sure we only train the latent space model with Members of Congress; then we will add the other accounts.
+
+```{r}
+# choosing supplementary columns
+included <- users$twitter[users$type %in% c("Congress")]
+supcol <- which(tolower(colnames(y)) %in% included == FALSE)
+colnames(y)[supcol] ## these will be excluded
+```
+
+And now we can run the model! We can choose how many dimensions to explore -- for now, let's go with 3.
+
+```{r, eval=FALSE}
+# fitting CA model
+res <- tweetscores::CA(y, nd=3, supcol=supcol)
+save(res, file="~/backup/ca-results.rdata")
+```
+
+The model returns row and column coordinates, which correspond to the estimated positions on the latent space. We will now look at the accounts at the extremes of these distributions to examine the face validity of our results.
+
+```{r}
+load("~/backup/ca-results.rdata")
+
+# results
+head(res$rowcoord)
+head(res$rownames)
+head(res$colcoord)
+head(res$colnames)
+
+# merging with data
+users <- read.csv("~/data/accounts-twitter-data.csv")
+users <- merge(users, data.frame(
+	twitter=tolower(res$colnames), phi1=res$colcoord[,1], 
+	phi2=res$colcoord[,2], phi3=res$colcoord[,3], stringsAsFactors=F))
+
+# who is on the extremes
+head(users[order(users$phi1),])
+tail(users[order(users$phi1),])
+
+head(users[order(users$phi2),])
+tail(users[order(users$phi2),])
+
+# what could the second dimension mean?
+plot(users$phi1, users$phi2, type="n")
+text(users$phi1, users$phi2, label=substr(users$type, 1, 2))
+plot(users$phi2, log(users$followers_count))
+cor(users$phi2, log(users$followers_count))
+
+# primary candidates
+users <- users[order(users$phi1),]
+users[users$type=="Primary Candidate",c("screen_name", "phi1")]
+
+# others
+users[users$type=="Media Outlets",c("screen_name", "phi1")]
+
+users[users$type=="Journalists",c("screen_name", "phi1")]
+
+users[users$type=="Other Politicians",c("screen_name", "phi1")]
+```
+
+The reason why we started with Members of Congress is that we do have good measures of ideology for these accounts -- let's now examine the convergent validity of our results by exploring how correlated our estimates are with these external measures of ideology.
+
+```{r}
+house <- read.csv("~/data/house.csv", stringsAsFactors=F); house$chamber <- "House"
+senate <- read.csv("~/data/senate.csv", stringsAsFactors=F); senate$chamber <- "Senate"
+ideal <- rbind(house[,c("nameid", "idealPoint", "chamber")], 
+			senate[,c("nameid", "idealPoint", "chamber")])
+names(ideal) <- c("bioid", "ideal", "chamber")
+users <- merge(users, ideal)
+
+# validation
+library(dplyr)
+dd <- group_by(users, chamber, party)
+summarize(dd, cor(ideal, phi1))
+
+library(ggplot2)
+p <- ggplot(users, aes(x=ideal, y=phi1, color=party))
+pq <- p + geom_point() + facet_wrap(~ chamber) +
+	scale_color_manual(values=c("blue", "green", "red"))
+pq
+
+
+p <- ggplot(users, aes(x=phi1, fill=party))
+pq <- p + geom_density() + facet_wrap(~ chamber) +
+	scale_fill_manual(values=c("blue", "green", "red"))
+pq
+
+```
+
+
+
+
+
+
+
+
