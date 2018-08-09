@@ -1,0 +1,67 @@
+---
+title: "Challenge 9: Supervised machine learning"
+author: Pablo Barbera
+date: "August 9, 2018"
+output: html_document
+---
+
+Now it's your turn to build a classifier! The file `incivility.csv` contains roughly a stratified random sample of 3,000 Facebook comments on the public pages of U.S. legislators. Each of these comments was labeled by a human annotator as containing `attacks` or not (`atacks` here is defined as: name-calling, insults, aspersions..., etc). We will take this as our working definition of incivility.
+
+Read the dataset into R. What proportion of comments in this sample are classified as being uncivil?
+
+```{r}
+library(quanteda)
+fb <- read.csv("~/data/incivility.csv", stringsAsFactors = FALSE)
+
+```
+
+Create a DFM for the comments on this dataset. Use sensible options (e.g. should you stem? trim it?)
+
+```{r}
+
+```
+
+Now, split the dataset into training and test sets using similar code as what we just used.
+
+```{r}
+
+```
+
+Build a LASSO classifier with the training set.
+
+```{r}
+
+```
+
+Compute the accuracy, precision, and recall. Do you think this is a good classifier?
+
+```{r}
+
+
+```
+
+Find the features that are most predictive of each category. Do you think your classifier properly captured the concept of incivility?
+
+```{r}
+
+
+```
+
+Try with one of the other classifiers we covered in class. Do you find that the performance of your classifier improves?
+
+```{r}
+
+
+```
+
+
+(Advanced) Do uncivil comments receive higher engagement? Use the `comments_likes_count` variable (measuring the number of likes on each comment) to answer this question. Use any statistical technique you may consider appropriate.
+
+```{r}
+
+
+```
+
+
+
+

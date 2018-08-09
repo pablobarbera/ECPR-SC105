@@ -1,0 +1,82 @@
+---
+title: "Challenge 8: Dictionary methods"
+author: Pablo Barbera
+date: "August 9, 2018"
+output: html_document
+---
+
+In this challenge, you will use a dictionary method to identify populist rhetoric in British parties' Facebook posts.
+
+We'll start by loading the data, which contains posts on the Facebook pages of the party and candidate for all five major British parties.
+
+```{r}
+library(quanteda)
+uk <- read.csv("~/data/FB-UK-parties.csv", stringsAsFactors = FALSE)
+table(uk$party)
+table(uk$name)
+```
+
+We will rely on the populism dictionary from Rooduijn, Matthijs, and Teun Pauwels (2011) “Measuring Populism: Comparing Two Methods of Content Analysis.” West European Politics 34(6): 1272–83
+
+Appendix B of that paper provides the term entries for a dictionary key for the concept populism. We will implement this as a dictionary object with quanteda, and apply it to the UK Facebook posts. (Note that in the article they apply them to the party manifestos.)
+
+For your convenience, I already typed the list of populist words here:
+
+```{r}
+populist_dict <- dictionary(list(
+  populism = c(
+      "elit*",
+      "consensus*",
+      "undemocratic*",
+      "referend*",
+      "corrupt*",
+      "propagand*",
+      "politici*",
+      "*deceit*",
+      "*deceiv*",
+      "*betray*",
+      "shame*",
+      "scandal*",
+      "truth*",
+      "dishonest*",
+      "establishm*",
+      "ruling*")))
+
+```
+
+Now, create a corpus object with quanteda, and then group all the posts by a given party into a single DFM, as we just did with the tweets example.
+
+```{r}
+
+```
+
+Do you think it makes sense to normalize for document length in this context? If so, make sure you convert the DFM into proportions. If not, leave as is. Then, use `dfm_lookup` to identify the extent to which each party uses populist rhetoric on social media. What do you find?
+
+```{r}
+
+```
+
+We will now discuss the _precision_ of your dictionary. Use the `kwic()` function to find instances of each of the dictionary terms above in this corpus. Do you think most instances do indeed refer to populist rhetoric?
+
+```{r}
+
+```
+
+What about recall? Are there any relevant words that were excluded? Use `kwic()` to think through potential new words you may want to add, and re-run the analysis. Do the results change?
+
+```{r}
+
+```
+
+Media accounts have often depicted Jeremy Corbyn as a populist leader. If that's the case, we may expect to find that his Facebook posts tend to rely more often on populist rhetoric than Labour's Facebook page. Is that observation supported by the data? Write similar code as above to answer this question.
+
+```{r}
+
+```
+
+One cognitive explanation for the success of populist appeals is that it expresses anger, which is likely to affect voters' emotional states. Use the LIWC dictionary to test whether the party that you identified as using populist rhetoric more frequently is also more likely to use anger words.
+
+```{r}
+
+```
+

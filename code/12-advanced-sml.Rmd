@@ -1,0 +1,183 @@
+---
+title: "SVM, Random Forests, and beyond"
+author: Pablo Barbera
+date: August 9, 2018
+output: html_document
+---
+
+### Support Vector Machines
+
+Continuing with our previous example, we'll now try other classifiers. First up is SVMs -- the code below illustrates a common trade-off between performance and interpretability of the model.
+
+
+```{r}
+library(quanteda)
+tweets <- read.csv("~/data/UK-tweets.csv", stringsAsFactors=F)
+tweets$engaging <- ifelse(tweets$communication=="engaging", 1, 0)
+tweets <- tweets[!is.na(tweets$engaging),]
+# clean text and create DFM
+tweets$text <- gsub('@[0-9_A-Za-z]+', '@', tweets$text)
+twcorpus <- corpus(tweets$text)
+twdfm <- dfm(twcorpus, remove=stopwords("english"), remove_url=TRUE, 
+             ngrams=1:2, verbose=TRUE)
+twdfm <- dfm_trim(twdfm, min_docfreq = 5, verbose=TRUE)
+# training and test sets
+set.seed(123)
+training <- sample(1:nrow(tweets), floor(.80 * nrow(tweets)))
+test <- (1:nrow(tweets))[1:nrow(tweets) %in% training == FALSE]
+```
+
+First, let's run SVM by choosing manually the cost parameter (regularization term).
+
+```{r}
+library(e1071)
+fit <- svm(x=twdfm[training,], y=factor(tweets$engaging[training]),
+           kernel="linear", cost=10, probability=TRUE)
+
+preds <- predict(fit, twdfm[test,])
+
+## function to compute accuracy
+accuracy <- function(ypred, y){
+	tab <- table(ypred, y)
+	return(sum(diag(tab))/sum(tab))
+}
+# function to compute precision
+precision <- function(ypred, y){
+	tab <- table(ypred, y)
+	return((tab[2,2])/(tab[2,1]+tab[2,2]))
+}
+# function to compute recall
+recall <- function(ypred, y){
+	tab <- table(ypred, y)
+	return(tab[2,2]/(tab[1,2]+tab[2,2]))
+}
+
+# confusion matrix
+table(preds, tweets$engaging[test])
+# performance metrics
+accuracy(preds, tweets$engaging[test])
+precision(preds, tweets$engaging[test])
+recall(preds, tweets$engaging[test])
+```
+
+Unlike regularized regression, here looking at the estimated coefficients is not as informative because they only tell us what support vectors were estimated in the model. But we can have a sense of what observations are more "important" or "separate" better the data by extracting the support vectors in the data matrix and then their corresponding coefficients (times the training labels):
+
+```{r}
+df <- data.frame(
+  vector = tweets$text[training][fit$index],
+  coef = fit$coefs,
+  stringsAsFactors = F
+)
+
+df <- df[order(df$coef),]
+head(df[,c("coef", "vector")], n=10)
+
+df <- df[order(df$coef, decreasing=TRUE),]
+head(df[,c("coef", "vector")], n=10)
+```
+
+Note that this will only work with linear kernels.
+
+There's a version of svm with cross-validation already built-in. We'll now use to find the best cost parameter:
+
+```{r}
+fit <- tune(svm, train.x=twdfm[training,], 
+            train.y=factor(tweets$engaging[training]),
+            kernel="linear",
+            ranges=list(cost=c(0.001, 0.01, 0.1, 1, 5, 10, 100)))
+summary(fit)
+
+# best model
+bestmodel <- fit$best.model
+summary(bestmodel)
+
+# evaluating performance
+preds <- predict(bestmodel, twdfm[test,])
+# confusion matrix
+table(preds, tweets$engaging[test])
+# performance metrics
+accuracy(preds, tweets$engaging[test])
+precision(preds, tweets$engaging[test])
+recall(preds, tweets$engaging[test])
+
+df <- data.frame(
+  vector = tweets$text[training][bestmodel$index],
+  coef = bestmodel$coefs,
+  stringsAsFactors = F
+)
+
+df <- df[order(df$coef),]
+head(df[,c("coef", "vector")], n=10)
+
+df <- df[order(df$coef, decreasing=TRUE),]
+head(df[,c("coef", "vector")], n=10)
+
+```
+
+
+### Random forests
+
+Turning to random forests, we'll need to dramatically reduce the size of our matrix to make sure it doesn't take hours to run; so we'll just pick features that are not frequent but also not too rare. We'll see that random forests tend to perform quite well, but at the cost of higher computational cost and even less interpretability (we can only learn of "feature importance" -- the extent to which a variable tends to separate classes more frequently than others).
+
+
+```{r}
+library(randomForest)
+set.seed(777)
+
+X <- as.matrix(dfm_trim(twdfm, min_docfreq = 50, 
+                        max_docfreq=0.80*nrow(twdfm), verbose=TRUE))
+dim(X)
+
+rf <- randomForest(x=X[training,], 
+                   y=factor(tweets$engaging[training]),
+                   xtest=X[test,],
+                   ytest=factor(tweets$engaging[test]),
+                   importance=TRUE,
+                   mtry=20,
+                   ntree=100
+                   )
+rf
+importance(rf)
+varImpPlot(rf)
+
+```
+
+## Ensemble methods
+
+One interesting way to run supervised learning algorithms is to __combine__ the using ensemble methods. The idea is the following: run each method, check how well they perform, and then pick a prediction for the units in the test set that is weighted according to how well each classifier performs. The `SuperLearner` package in R is probably the best library for ensemble methods in ML.
+
+```{r}
+library(SuperLearner)
+
+# X needs to be a data frame
+Xtrain <- as.data.frame(as.matrix(dfm_trim(twdfm, min_docfreq = 100, 
+                        max_docfreq=0.80*nrow(twdfm), verbose=TRUE)))
+features <- names(Xtrain)
+names(Xtrain) <- paste0("V", 1:ncol(Xtrain))
+
+set.seed(777)
+
+sl <- SuperLearner(Y = tweets$engaging[training], X = Xtrain[training,], 
+                  family = binomial(),
+                  SL.library = c("SL.mean", "SL.glmnet", 
+                                "SL.step"),
+                  cvControl=list(V=5))
+sl
+
+# what other classifiers are available?
+listWrappers()
+
+# measuring peformance
+preds <- predict(sl, Xtrain[test,])
+head(preds$library.predict)
+preds <- preds$pred > 0.50
+
+# confusion matrix
+table(preds, tweets$engaging[test])
+# performance metrics
+accuracy(preds, tweets$engaging[test])
+precision(preds, tweets$engaging[test])
+recall(preds, tweets$engaging[test])
+
+```
+

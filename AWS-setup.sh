@@ -115,4 +115,39 @@ do
 done
 
 
+# solutions challenge 6
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/challenge6-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge6-solutions.html /home/bigdata$i/code/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+# materials day 4
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/10-dictionary-methods.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/11-supervised-learning.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/12-advanced-sml.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/13-xgboost.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/challenge8.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/challenge9.Rmd /home/bigdata$i/code
+	cp /home/rstudio/data/FB-UK-parties.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/incivility.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/liwc-dictionary.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/candidate-tweets.csv /home/bigdata$i/data/
+	cp /home/rstudio/data/trump-tweets.json /home/bigdata$i/data/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+# solutions challenge 6
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/challenge7-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge7-solutions.html /home/bigdata$i/code/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+
+
 

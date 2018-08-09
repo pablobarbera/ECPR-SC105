@@ -1,0 +1,150 @@
+---
+title: "(Advanced) supervised machine learning"
+author: Pablo Barbera
+date: July 3, 2018
+output: html_document
+---
+
+### Xgboost
+
+If we really want the best performance at a low computational cost, the cutting-edge method many people are using is Distributed Gradient Boosting, based on the same ideas as boosted trees / random forests, implemented as `xgboost`. You can read more about the history of this package [here](https://homes.cs.washington.edu/~tqchen/2016/03/10/story-and-lessons-behind-the-evolution-of-xgboost.html).
+
+First, let's prepare the data...
+
+```{r}
+library(quanteda)
+tweets <- read.csv("~/data/UK-tweets.csv", stringsAsFactors=F)
+tweets$engaging <- ifelse(tweets$communication=="engaging", 1, 0)
+tweets <- tweets[!is.na(tweets$engaging),]
+# clean text and create DFM
+tweets$text <- gsub('@[0-9_A-Za-z]+', '@', tweets$text)
+twcorpus <- corpus(tweets$text)
+twdfm <- dfm(twcorpus, remove=stopwords("english"), remove_url=TRUE, 
+             ngrams=1:2, verbose=TRUE)
+twdfm <- dfm_trim(twdfm, min_docfreq = 2, verbose=TRUE)
+# training and test sets
+set.seed(123)
+training <- sample(1:nrow(tweets), floor(.80 * nrow(tweets)))
+test <- (1:nrow(tweets))[1:nrow(tweets) %in% training == FALSE]
+```
+
+Now we can train the model:
+
+```{r}
+library(xgboost)
+# converting matrix object
+X <- as(twdfm, "dgCMatrix")
+# parameters to explore
+tryEta <- c(1,2)
+tryDepths <- c(1,2,4)
+# placeholders for now
+bestEta=NA
+bestDepth=NA
+bestAcc=0
+
+for(eta in tryEta){
+  for(dp in tryDepths){	
+    bst <- xgb.cv(data = X[training,], 
+		    label =  tweets$engaging[training], 
+		    max.depth = dp,
+	      eta = eta, 
+	      nthread = 4,
+	      nround = 500,
+	      nfold=5,
+	      print_every_n = 100L,
+	      objective = "binary:logistic")
+    # cross-validated accuracy
+    acc <- 1-mean(tail(bst$evaluation_log$test_error_mean))
+		cat("Results for eta=",eta," and depth=", dp, " : ",
+				acc," accuracy.\n",sep="")
+		if(acc>bestAcc){
+				bestEta=eta
+				bestAcc=acc
+				bestDepth=dp
+		}
+	}
+}
+
+cat("Best model has eta=",bestEta," and depth=", bestDepth, " : ",
+	bestAcc," accuracy.\n",sep="")
+   
+```
+
+How well does it perform out-of-sample?
+
+```{r}
+# running best model
+rf <- xgboost(data = X[training,], 
+    label = tweets$engaging[training], 
+		max.depth = bestDepth,
+    eta = bestEta, 
+    nthread = 4,
+    nround = 1000,
+		print_every_n=100L,
+    objective = "binary:logistic")
+
+# out-of-sample accuracy
+preds <- predict(rf, X[test,])
+
+## function to compute accuracy
+accuracy <- function(ypred, y){
+	tab <- table(ypred, y)
+	return(sum(diag(tab))/sum(tab))
+}
+# function to compute precision
+precision <- function(ypred, y){
+	tab <- table(ypred, y)
+	return((tab[2,2])/(tab[2,1]+tab[2,2]))
+}
+# function to compute recall
+recall <- function(ypred, y){
+	tab <- table(ypred, y)
+	return(tab[2,2]/(tab[1,2]+tab[2,2]))
+}
+
+cat("\nAccuracy on test set=", round(accuracy(preds>.50, tweets$engaging[test]),3))
+cat("\nPrecision(1) on test set=", round(precision(preds>.50, tweets$engaging[test]),3))
+cat("\nRecall(1) on test set=", round(recall(preds>.50, tweets$engaging[test]),3))
+cat("\nPrecision(0) on test set=", round(precision(preds<.50, tweets$engaging[test]==0),3))
+cat("\nRecall(0) on test set=", round(recall(preds<.50, tweets$engaging[test]==0),3))
+
+```
+
+What we sacrifice is interpretability (yet again!). We can check feature importance, but it's often hard to tell what's going on exactly. Why? We only what features "matter", but not why!
+
+
+```{r}
+# feature importance
+labels <- dimnames(X)[[2]]
+importance <- xgb.importance(labels, model = rf, data=X, label=tweets$engaging)
+importance <- importance[order(importance$Gain, decreasing=TRUE),]
+head(importance, n=20)
+
+# adding sign
+sums <- list()
+for (v in 0:1){
+	sums[[v+1]] <- colSums(X[tweets[,"engaging"]==v,])
+}
+sums <- do.call(cbind, sums)
+sign <- apply(sums, 1, which.max)
+	
+df <- data.frame(
+	Feature = labels, 
+	sign = sign-1,
+	stringsAsFactors=F)
+importance <- merge(importance, df, by="Feature")
+	
+## best predictors
+for (v in 0:1){
+	cat("\n\n")
+	cat("value==", v)
+	importance <- importance[order(importance$Gain, decreasing=TRUE),]
+	print(head(importance[importance$sign==v,], n=50))
+	cat("\n")
+	cat(paste(unique(head(importance$Feature[importance$sign==v], n=50)), collapse=", "))
+}
+
+```
+
+
+
