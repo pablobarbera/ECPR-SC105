@@ -140,7 +140,7 @@ do
 	sudo chown bigdata$i -R /home/bigdata$i/
 done
 
-# solutions challenge 6
+# solutions challenge 7
 for i in 0{1..9} {10..40}
 do
 	cp /home/rstudio/code/challenge7-solutions.Rmd /home/bigdata$i/code/
@@ -149,5 +149,41 @@ do
 done
 
 
+# solutions challenge 8
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/challenge8-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge8-solutions.html /home/bigdata$i/code/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
 
 
+# materials day 5
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/14-text-discovery.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/15-topic-models.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/16-word-embeddings.Rmd /home/bigdata$i/code
+	cp /home/rstudio/code/vec.bin /home/bigdata$i/code
+	cp /home/rstudio/code/FBvec.bin /home/bigdata$i/code
+	cp /home/rstudio/code/challenge10.Rmd /home/bigdata$i/code
+	cp /home/rstudio/data/nytimes.csv /home/bigdata$i/data/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+
+# solutions challenge 9
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/challenge9-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge9-solutions.html /home/bigdata$i/code/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done
+
+# solutions challenge 10
+for i in 0{1..9} {10..40}
+do
+	cp /home/rstudio/code/challenge10-solutions.Rmd /home/bigdata$i/code/
+	cp /home/rstudio/code/challenge10-solutions.html /home/bigdata$i/code/
+	sudo chown bigdata$i -R /home/bigdata$i/
+done

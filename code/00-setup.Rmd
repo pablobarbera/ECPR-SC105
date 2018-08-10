@@ -56,10 +56,12 @@ doInstall <- TRUE  # Change to FALSE if you don't want packages installed.
 toInstall <- c("streamR", "ggplot2", "stringr", "readr", "readtext",
 	"devtools", "quanteda", "dplyr", "igraph", "topicmodels",
 	"stringi", "igraph", "Matrix", "doMC", "glmnet", "xgboost",
-	"bigrquery", "randomForest", "e1071")
+	"bigrquery", "randomForest", "e1071", "lsa")
 if (doInstall) install.packages(toInstall)
 if (doInstall) devtools::install_github("pablobarbera/twitter_ideology/pkg/tweetscores")
 if (doInstall) devtools::install_github("pablobarbera/streamR/streamR")
+if (doInstall) devtools::install_github("mukul13/rword2vec")
+
 
 ```
 

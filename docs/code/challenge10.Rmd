@@ -1,0 +1,61 @@
+---
+title: "Challenge 10: Topic models"
+author: Pablo Barbera
+date: "August 10, 2018"
+output: html_document
+---
+
+Now it's your turn to run some topic models with social media text! 
+
+The goal of this challenge is to understand the communication strategies of Donald Trump on Twitter. First, read the file that contains his tweets from the past year and a half. We will create a new variable called `month` to help us track changes in topic usage over time, and another variable indicating whether the tweet was coming from an Android device.
+
+In the first part of the challenge, you will analyze whether the tweets sent fro an Android device are different from those sent from an iPhone. For more background on why this is relevant, see [here](http://varianceexplained.org/r/trump-tweets/).
+
+```{r}
+library(quanteda)
+library(streamR)
+library(topicmodels)
+tweets <- parseTweets("~/data/trump-tweets.json")
+tweets$date <- tweetscores::formatTwDate(tweets$created_at, "date")
+tweets$month <- substr(tweets$date, 1, 7)
+tweets$android <- grepl("Android", tweets$source)
+```
+
+Create a corpus object and a DFM using options that seem appropriate to you.
+
+```{r}
+
+```
+
+Now, do a keyness analysis of tweets coming from an Android, and those coming from other devices. What do you find?
+
+```{r}
+
+```
+
+Early in the presidency, Trump switched from an Android to an iPhone device. Use a frequency table of month and device used to find when exactly this change happened. Then, replicate the previous analysis but only for the months during which Trump was using an Android device. Do the results change?
+
+```{r}
+
+```
+
+We will now switch to topic models to understand the main themes in the tweets and how they evolve over time. Run an LDA model. You may want to experiment with different number of topics or just stick to `K=30`, and to modify your previous preprocessing decisions.
+
+```{r}
+
+```
+
+Look at the words most asociated with each topic for a sample of topics. Do you find that the results are valid according to the different definitions of validity we discussed earlier? Can you put labels to the topics?
+
+```{r}
+
+
+```
+
+Pick a topic whose prevalence you think may have evolved over time and plot it. (For example, North Korea). What do you find?
+
+```{r}
+
+
+```
+
